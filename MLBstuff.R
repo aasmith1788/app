@@ -7,7 +7,6 @@ library(readr)
 library(DT)
 library(shinyWidgets)
 library(ggplot2)
-library(ggridges)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -55,7 +54,7 @@ stuffPlusUI <- function(id) {
         
         .player-panel {
           background: white;
-          overflow: hidden;
+          overflow: visible;
         }
         
         .filter-bar {
@@ -159,6 +158,7 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
+          overflow-x: auto;
         }
 
         .plot-row {
@@ -166,17 +166,15 @@ stuffPlusUI <- function(id) {
           gap: 10px;
         }
 
-        .velocity-plot-wrapper,
         .stuffplus-plot-wrapper {
-          width: 33%;
+          width: 50%;
           margin-bottom: 8px;
         }
 
         table.dataTable {
           font-size: 11px;
           border-collapse: collapse;
-          width: 100% !important;
-          table-layout: fixed;
+          width: 100%;
         }
         
         table.dataTable thead th {
@@ -731,38 +729,6 @@ stuffPlusServer <- function(id) {
         )
     }
 
-    # ---- 11b. Velocity plot function -------------------------------
-    create_velocity_plot <- function(player_df, group_df) {
-      if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
-
-      pitch_order <- player_df %>%
-        count(pitch_type, sort = TRUE) %>%
-        pull(pitch_type)
-
-      player_df <- player_df %>%
-        mutate(pitch_type = factor(pitch_type, levels = pitch_order))
-
-      player_means <- player_df %>%
-        group_by(pitch_type) %>%
-        summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
-
-      group_means <- group_df %>%
-        filter(pitch_type %in% pitch_order) %>%
-        group_by(pitch_type) %>%
-        summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
-
-      ggplot(player_df, aes(x = release_speed, y = pitch_type, fill = pitch_type, colour = pitch_type)) +
-        ggridges::geom_density_ridges(alpha = 0.4, scale = 1, rel_min_height = 0.01, show.legend = FALSE) +
-        geom_vline(data = player_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dashed", show.legend = FALSE) +
-        geom_vline(data = group_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dotted", show.legend = FALSE) +
-        labs(title = "Pitch Velocity Distribution", x = "Velocity (mph)", y = NULL) +
-        theme_minimal(base_size = 9) +
-        theme(axis.text.y = element_text(size = 8),
-              plot.title = element_text(hjust = 0.5, size = 10),
-              panel.grid.major.y = element_blank(),
-              panel.grid.minor = element_blank(),
-              legend.position = "none")
-    }
 
     # ---- 11c. Stuff+ by outing plot function ----------------------
     create_stuffplus_plot <- function(player_df) {
@@ -815,17 +781,9 @@ stuffPlusServer <- function(id) {
       create_compact_table(data)
     })
 
-    # Velocity plots
-    output$velocity_plot1 <- renderPlot({
-      create_velocity_plot(get_season_data1(), all_pitches)
-    })
-
+    # Stuff+ outing plots
     output$stuffplus_plot1 <- renderPlot({
       create_stuffplus_plot(get_season_data1())
-    })
-
-    output$velocity_plot2 <- renderPlot({
-      create_velocity_plot(get_season_data2(), all_pitches)
     })
 
     output$stuffplus_plot2 <- renderPlot({
@@ -839,11 +797,9 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
-            div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot1"), height = plot_height)),
             div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "180px"))
         ),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
@@ -867,11 +823,9 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
-            div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot2"), height = plot_height)),
             div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "180px"))
         ),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
