@@ -6,6 +6,7 @@ library(dplyr)
 library(readr)
 library(DT)
 library(shinyWidgets)
+library(ggplot2)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -719,6 +720,35 @@ stuffPlusServer <- function(id) {
           fontWeight = styleEqual("All", "bold")
         )
     }
+
+    # ---- 11b. Velocity plot function -------------------------------
+    create_velocity_plot <- function(player_df, group_df) {
+      if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
+
+      pitch_order <- player_df %>%
+        count(pitch_type, sort = TRUE) %>%
+        pull(pitch_type)
+
+      player_means <- player_df %>%
+        group_by(pitch_type) %>%
+        summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
+
+      group_means <- group_df %>%
+        filter(pitch_type %in% pitch_order) %>%
+        group_by(pitch_type) %>%
+        summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
+
+      ggplot(player_df, aes(x = release_speed, fill = pitch_type, colour = pitch_type)) +
+        geom_density(alpha = 0.4, show.legend = FALSE) +
+        geom_vline(data = player_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dashed") +
+        geom_vline(data = group_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dotted") +
+        facet_wrap(vars(factor(pitch_type, levels = pitch_order)), ncol = 1, scales = "free_y") +
+        labs(title = "Pitch Velocity Distribution", x = "Velocity (mph)", y = NULL) +
+        theme_minimal(base_size = 9) +
+        theme(strip.text = element_text(size = 8),
+              plot.title = element_text(hjust = 0.5, size = 10),
+              panel.spacing = unit(0.3, "lines"))
+    }
     
     # ---- 12. Render all tables ---------------------------------------
     # Player 1 tables
@@ -744,6 +774,15 @@ stuffPlusServer <- function(id) {
       req(!is.null(data))
       create_compact_table(data)
     })
+
+    # Velocity plots
+    output$velocity_plot1 <- renderPlot({
+      create_velocity_plot(get_season_data1(), all_pitches)
+    })
+
+    output$velocity_plot2 <- renderPlot({
+      create_velocity_plot(get_season_data2(), all_pitches)
+    })
     
     # ---- 13. Summary UIs ---------------------------------------------
     # Player 1
@@ -752,7 +791,9 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
+      plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
       tagList(
+        plotOutput(ns("velocity_plot1"), height = plot_height),
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
@@ -775,7 +816,9 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
+      plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
       tagList(
+        plotOutput(ns("velocity_plot2"), height = plot_height),
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
