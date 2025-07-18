@@ -157,13 +157,13 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
-          overflow-x: auto;
         }
-        
+
         table.dataTable {
-          font-size: 11px;
+          font-size: 9px;
           border-collapse: collapse;
           width: 100% !important;
+          table-layout: fixed;
         }
         
         table.dataTable thead th {
@@ -696,13 +696,12 @@ stuffPlusServer <- function(id) {
         options = list(
           dom = "t",
           ordering = FALSE,
-          scrollX = TRUE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
-            list(width = "25px", targets = 0),  # Type
-            list(width = "35px", targets = 1),  # Count
-            list(width = "28px", targets = c(2:8)),  # Stats
-            list(width = "35px", targets = c(9:12))  # Percentages
+            list(width = "20px", targets = 0),  # Type
+            list(width = "30px", targets = 1),  # Count
+            list(width = "25px", targets = c(2:8)),  # Stats
+            list(width = "30px", targets = c(9:12))  # Percentages
           )
         ),
         rownames = FALSE,
@@ -710,7 +709,10 @@ stuffPlusServer <- function(id) {
       ) %>%
         formatStyle(
           columns = 1:ncol(summary_data),
-          fontSize = '10px'
+          fontSize = '9px',
+          `white-space` = 'nowrap',
+          overflow = 'hidden',
+          `text-overflow` = 'ellipsis'
         ) %>%
         formatStyle(
           "Type",
