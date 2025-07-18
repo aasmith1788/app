@@ -55,7 +55,7 @@ stuffPlusUI <- function(id) {
         
         .player-panel {
           background: white;
-          overflow: visible;
+          overflow: hidden;
         }
         
         .filter-bar {
@@ -159,11 +159,15 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
-          overflow-x: visible;
+        }
+
+        .velocity-plot-wrapper {
+          width: 33%;
+          margin-bottom: 8px;
         }
 
         table.dataTable {
-          font-size: 10px;
+          font-size: 11px;
           border-collapse: collapse;
           width: 100% !important;
         }
@@ -699,7 +703,11 @@ stuffPlusServer <- function(id) {
           dom = "t",
           ordering = FALSE,
           columnDefs = list(
-            list(className = "dt-center", targets = "_all")
+            list(className = "dt-center", targets = "_all"),
+            list(width = "25px", targets = 0),  # Type
+            list(width = "35px", targets = 1),  # Count
+            list(width = "28px", targets = c(2:8)),  # Stats
+            list(width = "35px", targets = c(9:12))  # Percentages
           )
         ),
         rownames = FALSE,
@@ -707,8 +715,7 @@ stuffPlusServer <- function(id) {
       ) %>%
         formatStyle(
           columns = 1:ncol(summary_data),
-          fontSize = '10px',
-          `white-space` = 'nowrap'
+          fontSize = '10px'
         ) %>%
         formatStyle(
           "Type",
@@ -738,14 +745,15 @@ stuffPlusServer <- function(id) {
 
       ggplot(player_df, aes(x = release_speed, y = pitch_type, fill = pitch_type, colour = pitch_type)) +
         ggridges::geom_density_ridges(alpha = 0.4, scale = 1, rel_min_height = 0.01, show.legend = FALSE) +
-        geom_vline(data = player_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dashed") +
-        geom_vline(data = group_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dotted") +
+        geom_vline(data = player_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dashed", show.legend = FALSE) +
+        geom_vline(data = group_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dotted", show.legend = FALSE) +
         labs(title = "Pitch Velocity Distribution", x = "Velocity (mph)", y = NULL) +
         theme_minimal(base_size = 9) +
         theme(axis.text.y = element_text(size = 8),
               plot.title = element_text(hjust = 0.5, size = 10),
               panel.grid.major.y = element_blank(),
-              panel.grid.minor = element_blank())
+              panel.grid.minor = element_blank(),
+              legend.position = "none")
     }
     
     # ---- 12. Render all tables ---------------------------------------
@@ -792,7 +800,7 @@ stuffPlusServer <- function(id) {
       plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
-        plotOutput(ns("velocity_plot1"), height = plot_height),
+        div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot1"), height = plot_height)),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
     })
@@ -817,7 +825,7 @@ stuffPlusServer <- function(id) {
       plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
-        plotOutput(ns("velocity_plot2"), height = plot_height),
+        div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot2"), height = plot_height)),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
     })
