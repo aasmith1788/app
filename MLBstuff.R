@@ -161,7 +161,13 @@ stuffPlusUI <- function(id) {
           margin-top: 8px;
         }
 
-        .velocity-plot-wrapper {
+        .plot-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .velocity-plot-wrapper,
+        .stuffplus-plot-wrapper {
           width: 33%;
           margin-bottom: 8px;
         }
@@ -170,6 +176,7 @@ stuffPlusUI <- function(id) {
           font-size: 11px;
           border-collapse: collapse;
           width: 100% !important;
+          table-layout: fixed;
         }
         
         table.dataTable thead th {
@@ -190,6 +197,7 @@ stuffPlusUI <- function(id) {
           text-align: center;
           color: #1a1a1a;
           font-size: 11px;
+          white-space: nowrap;
         }
         
         table.dataTable tbody tr:hover {
@@ -755,6 +763,32 @@ stuffPlusServer <- function(id) {
               panel.grid.minor = element_blank(),
               legend.position = "none")
     }
+
+    # ---- 11c. Stuff+ by outing plot function ----------------------
+    create_stuffplus_plot <- function(player_df) {
+      if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
+
+      pitch_order <- player_df %>%
+        count(pitch_type, sort = TRUE) %>%
+        pull(pitch_type)
+
+      outing_means <- player_df %>%
+        mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
+        arrange(game_date) %>%
+        group_by(game_date, pitch_type) %>%
+        summarise(avg_stuff = mean(stuff_plus, na.rm = TRUE), .groups = "drop") %>%
+        group_by(pitch_type) %>%
+        mutate(outing = row_number()) %>%
+        ungroup()
+
+      ggplot(outing_means, aes(x = outing, y = avg_stuff, colour = pitch_type)) +
+        geom_line(size = 0.8) +
+        geom_point(size = 1.5) +
+        labs(title = "Stuff+ by Outing", x = "Outing", y = "Avg Stuff+") +
+        theme_minimal(base_size = 9) +
+        theme(plot.title = element_text(hjust = 0.5, size = 10),
+              legend.position = "none")
+    }
     
     # ---- 12. Render all tables ---------------------------------------
     # Player 1 tables
@@ -786,8 +820,16 @@ stuffPlusServer <- function(id) {
       create_velocity_plot(get_season_data1(), all_pitches)
     })
 
+    output$stuffplus_plot1 <- renderPlot({
+      create_stuffplus_plot(get_season_data1())
+    })
+
     output$velocity_plot2 <- renderPlot({
       create_velocity_plot(get_season_data2(), all_pitches)
+    })
+
+    output$stuffplus_plot2 <- renderPlot({
+      create_stuffplus_plot(get_season_data2())
     })
     
     # ---- 13. Summary UIs ---------------------------------------------
@@ -800,7 +842,10 @@ stuffPlusServer <- function(id) {
       plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
-        div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot1"), height = plot_height)),
+        div(class = "plot-row",
+            div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot1"), height = plot_height)),
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "180px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
     })
@@ -825,7 +870,10 @@ stuffPlusServer <- function(id) {
       plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
-        div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot2"), height = plot_height)),
+        div(class = "plot-row",
+            div(class = "velocity-plot-wrapper", plotOutput(ns("velocity_plot2"), height = plot_height)),
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "180px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
     })
