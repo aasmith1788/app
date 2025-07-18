@@ -6,6 +6,7 @@ library(dplyr)
 library(readr)
 library(DT)
 library(shinyWidgets)
+library(ggplot2)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -53,7 +54,7 @@ stuffPlusUI <- function(id) {
         
         .player-panel {
           background: white;
-          overflow: hidden;
+          overflow: visible;
         }
         
         .filter-bar {
@@ -158,11 +159,21 @@ stuffPlusUI <- function(id) {
         .data-table-container {
           margin-top: 8px;
         }
-        
+
+        .plot-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .stuffplus-plot-wrapper {
+          width: 50%;
+          margin-bottom: 8px;
+        }
+
         table.dataTable {
           font-size: 11px;
           border-collapse: collapse;
-          width: 100% !important;
+          width: 100%;
         }
         
         table.dataTable thead th {
@@ -183,6 +194,7 @@ stuffPlusUI <- function(id) {
           text-align: center;
           color: #1a1a1a;
           font-size: 11px;
+          white-space: nowrap;
         }
         
         table.dataTable tbody tr:hover {
@@ -715,6 +727,39 @@ stuffPlusServer <- function(id) {
           fontWeight = styleEqual("All", "bold")
         )
     }
+
+
+    # ---- 11c. Rolling Stuff+ by pitch function ----------------------
+    create_stuffplus_plot <- function(player_df) {
+      if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
+
+      pitch_order <- player_df %>%
+        count(pitch_type, sort = TRUE) %>%
+        pull(pitch_type)
+
+      pitch_means <- player_df %>%
+        arrange(game_date, pitch_number) %>%
+        mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
+        group_by(pitch_type) %>%
+        mutate(
+          pitch_idx = row_number(),
+          avg_stuff = as.numeric(stats::filter(
+            stuff_plus,
+            rep(1 / 50, 50),
+            sides = 1
+          ))
+        ) %>%
+        ungroup()
+
+      ggplot(pitch_means, aes(x = pitch_idx, y = avg_stuff, colour = pitch_type)) +
+        geom_line(size = 0.8) +
+        geom_point(size = 1.5) +
+        scale_y_continuous(limits = c(70, 130)) +
+        labs(title = "50-Pitch Rolling Stuff+", x = "Pitch #", y = "Avg Stuff+") +
+        theme_minimal(base_size = 9) +
+        theme(plot.title = element_text(hjust = 0.5, size = 10),
+              legend.position = "none")
+    }
     
     # ---- 12. Render all tables ---------------------------------------
     # Player 1 tables
@@ -740,6 +785,15 @@ stuffPlusServer <- function(id) {
       req(!is.null(data))
       create_compact_table(data)
     })
+
+    # Stuff+ outing plots
+    output$stuffplus_plot1 <- renderPlot({
+      create_stuffplus_plot(get_season_data1())
+    })
+
+    output$stuffplus_plot2 <- renderPlot({
+      create_stuffplus_plot(get_season_data2())
+    })
     
     # ---- 13. Summary UIs ---------------------------------------------
     # Player 1
@@ -750,6 +804,9 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "250px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
     })
@@ -773,6 +830,9 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "250px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
     })
