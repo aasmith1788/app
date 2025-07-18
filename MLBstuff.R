@@ -749,6 +749,7 @@ stuffPlusServer <- function(id) {
       ggplot(outing_means, aes(x = outing, y = avg_stuff, colour = pitch_type)) +
         geom_line(size = 0.8) +
         geom_point(size = 1.5) +
+        scale_y_continuous(limits = c(70, 130)) +
         labs(title = "Stuff+ by Outing", x = "Outing", y = "Avg Stuff+") +
         theme_minimal(base_size = 9) +
         theme(plot.title = element_text(hjust = 0.5, size = 10),
