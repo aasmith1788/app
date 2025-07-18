@@ -7,6 +7,7 @@ library(readr)
 library(DT)
 library(shinyWidgets)
 library(ggplot2)
+library(ggridges)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -158,13 +159,13 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
+          overflow-x: visible;
         }
 
         table.dataTable {
-          font-size: 9px;
+          font-size: 10px;
           border-collapse: collapse;
           width: 100% !important;
-          table-layout: fixed;
         }
         
         table.dataTable thead th {
@@ -698,11 +699,7 @@ stuffPlusServer <- function(id) {
           dom = "t",
           ordering = FALSE,
           columnDefs = list(
-            list(className = "dt-center", targets = "_all"),
-            list(width = "20px", targets = 0),  # Type
-            list(width = "30px", targets = 1),  # Count
-            list(width = "25px", targets = c(2:8)),  # Stats
-            list(width = "30px", targets = c(9:12))  # Percentages
+            list(className = "dt-center", targets = "_all")
           )
         ),
         rownames = FALSE,
@@ -710,10 +707,8 @@ stuffPlusServer <- function(id) {
       ) %>%
         formatStyle(
           columns = 1:ncol(summary_data),
-          fontSize = '9px',
-          `white-space` = 'nowrap',
-          overflow = 'hidden',
-          `text-overflow` = 'ellipsis'
+          fontSize = '10px',
+          `white-space` = 'nowrap'
         ) %>%
         formatStyle(
           "Type",
@@ -729,6 +724,9 @@ stuffPlusServer <- function(id) {
         count(pitch_type, sort = TRUE) %>%
         pull(pitch_type)
 
+      player_df <- player_df %>%
+        mutate(pitch_type = factor(pitch_type, levels = pitch_order))
+
       player_means <- player_df %>%
         group_by(pitch_type) %>%
         summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
@@ -738,16 +736,16 @@ stuffPlusServer <- function(id) {
         group_by(pitch_type) %>%
         summarise(mean_speed = mean(release_speed, na.rm = TRUE), .groups = "drop")
 
-      ggplot(player_df, aes(x = release_speed, fill = pitch_type, colour = pitch_type)) +
-        geom_density(alpha = 0.4, show.legend = FALSE) +
+      ggplot(player_df, aes(x = release_speed, y = pitch_type, fill = pitch_type, colour = pitch_type)) +
+        ggridges::geom_density_ridges(alpha = 0.4, scale = 1, rel_min_height = 0.01, show.legend = FALSE) +
         geom_vline(data = player_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dashed") +
         geom_vline(data = group_means, aes(xintercept = mean_speed, colour = pitch_type), linetype = "dotted") +
-        facet_wrap(vars(factor(pitch_type, levels = pitch_order)), ncol = 1, scales = "free_y") +
         labs(title = "Pitch Velocity Distribution", x = "Velocity (mph)", y = NULL) +
         theme_minimal(base_size = 9) +
-        theme(strip.text = element_text(size = 8),
+        theme(axis.text.y = element_text(size = 8),
               plot.title = element_text(hjust = 0.5, size = 10),
-              panel.spacing = unit(0.3, "lines"))
+              panel.grid.major.y = element_blank(),
+              panel.grid.minor = element_blank())
     }
     
     # ---- 12. Render all tables ---------------------------------------
@@ -791,7 +789,7 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
+      plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         plotOutput(ns("velocity_plot1"), height = plot_height),
@@ -816,7 +814,7 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
+      plot_height <- paste0(45 * length(unique(data$pitch_type)), "px")
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         plotOutput(ns("velocity_plot2"), height = plot_height),
