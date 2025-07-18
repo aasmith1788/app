@@ -72,12 +72,13 @@ stuffPlusUI <- function(id) {
         
         .filters-section {
           display: flex;
-          gap: 40px;
+          gap: 20px;
           margin-bottom: 30px;
           padding-bottom: 20px;
           border-bottom: 1px solid #e2e2e2;
+          align-items: flex-end;
         }
-        
+
         .filter-group {
           flex: 1;
         }
@@ -89,6 +90,13 @@ stuffPlusUI <- function(id) {
           letter-spacing: 0.5px;
           color: #666;
           margin-bottom: 10px;
+        }
+
+        .player-label {
+          font-size: 16px;
+          font-weight: 600;
+          margin-right: 10px;
+          align-self: center;
         }
         
         .selectize-input {
@@ -183,19 +191,29 @@ stuffPlusUI <- function(id) {
     div(class = "main-container",
         # Header
         div(class = "header-section",
-            h1("MLB Stuff Plus Analytics", class = "page-title"),
-            div(class = "search-row",
-                div(class = "search-input-container",
-                    selectizeInput(ns("player_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher name...",
-                                     maxOptions = 1000
-                                   ))
-                )
+            h1("MLB Stuff Plus Analytics", class = "page-title")
+        ),
+
+        div(class = "filters-section",
+            div(class = "player-label", "Player 1:"),
+            div(class = "filter-group",
+                selectizeInput(ns("player_search"), label = NULL,
+                               choices = NULL,
+                               options = list(
+                                 placeholder = "Search pitcher name...",
+                                 maxOptions = 1000
+                               ))
+            ),
+            div(class = "filter-group",
+                div(class = "filter-label", "Season"),
+                uiOutput(ns("year_filter_ui"))
+            ),
+            div(class = "filter-group",
+                div(class = "filter-label", "Game Date Set 1"),
+                uiOutput(ns("date_filter_ui1"))
             )
         ),
-        
+
         # Dynamic content
         uiOutput(ns("dynamic_content"))
     )
@@ -289,73 +307,45 @@ stuffPlusServer <- function(id) {
           )
         }
       } else {
-        # Player found - show filters and results
+        # Player found - show results
         player_data <- current_player_data()
         player_name <- unique(player_data$formatted_name)[1]
-        
-        # Get unique years
-        years <- sort(unique(player_data$year))
-        
+
         tagList(
-          # Filters
-          div(class = "filters-section",
-              div(class = "filter-group",
-                  div(class = "filter-label", "Season"),
-                  pickerInput(
-                    inputId = ns("year_filter"),
-                    label = NULL,
-                    choices = years,
-                    selected = years,
-                    multiple = TRUE,
-                    options = list(
-                      `actions-box` = TRUE,
-                      `selected-text-format` = "count > 2",
-                      `count-selected-text` = "{0} seasons selected",
-                      size = 10
-                    )
-                  )
-              ),
-              div(class = "filter-group",
-                  div(class = "filter-label", "Season Set 2"),
-                  pickerInput(
-                    inputId = ns("year_filter2"),
-                    label = NULL,
-                    choices = years,
-                    selected = NULL,
-                    multiple = TRUE,
-                    options = list(
-                      `actions-box` = TRUE,
-                      `selected-text-format` = "count > 2",
-                      `count-selected-text` = "{0} seasons selected",
-                      size = 10
-                    )
-                  )
-              ),
-              div(class = "filter-group",
-                  div(class = "filter-label", "Game Date Set 1"),
-                  uiOutput(ns("date_filter_ui1"))
-              ),
-              div(class = "filter-group",
-                  div(class = "filter-label", "Game Date Set 2"),
-                  uiOutput(ns("date_filter_ui2"))
-              )
-          ),
-          
-          # Results
           div(class = "results-header",
               h2(player_name, class = "player-name"),
               span(class = "pitch-count",
                    textOutput(ns("pitch_count"), inline = TRUE))
           ),
           uiOutput(ns("season_summary_ui")),
-          uiOutput(ns("season_summary2_ui")),
-          uiOutput(ns("summary_set1_ui")),
-          uiOutput(ns("summary_set2_ui"))
+          uiOutput(ns("summary_set1_ui"))
         )
       }
     })
     
-    # ---- 5. Game date filters (all available dates) -------------------
+    # ---- 5. Season filter --------------------------------------------
+    output$year_filter_ui <- renderUI({
+      req(current_player_data())
+      ns <- session$ns
+
+      years <- sort(unique(current_player_data()$year))
+
+      pickerInput(
+        inputId = ns("year_filter"),
+        label = NULL,
+        choices = years,
+        selected = years,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          `selected-text-format` = "count > 2",
+          `count-selected-text` = "{0} seasons selected",
+          size = 10
+        )
+      )
+    })
+
+    # ---- 6. Game date filters (all available dates) -------------------
     output$date_filter_ui1 <- renderUI({
       req(current_player_data())
       ns <- session$ns
@@ -382,31 +372,6 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$date_filter_ui2 <- renderUI({
-      req(current_player_data())
-      ns <- session$ns
-      
-      dates <- current_player_data() %>%
-        select(game_date, game_date_formatted) %>%
-        distinct() %>%
-        arrange(desc(game_date))
-      
-      pickerInput(
-        inputId = ns("date_filter2"),
-        label = NULL,
-        choices = setNames(dates$game_date, dates$game_date_formatted),
-        selected = NULL,
-        multiple = TRUE,
-        options = list(
-          `actions-box` = FALSE,
-          `selected-text-format` = "count > 2",
-          `count-selected-text` = "{0} games selected",
-          size = 10,
-          `live-search` = TRUE,
-          `none-selected-text` = "Choose dates"
-        )
-      )
-    })
     
     # ---- 6. Pitch count reactive -------------------------------------
     output$pitch_count <- renderText({
@@ -428,18 +393,6 @@ stuffPlusServer <- function(id) {
       data
     })
     
-    get_season_data2 <- reactive({
-      req(current_player_data())
-      
-      data <- current_player_data()
-      
-      if (!is.null(input$year_filter2) && length(input$year_filter2) > 0) {
-        data <- data %>% filter(year %in% input$year_filter2)
-      } else {
-        data <- NULL
-      }
-      data
-    })
     
     get_date_data1 <- reactive({
       data <- current_player_data()
@@ -451,15 +404,6 @@ stuffPlusServer <- function(id) {
       data
     })
     
-    get_date_data2 <- reactive({
-      data <- current_player_data()
-      if (!is.null(input$date_filter2) && length(input$date_filter2) > 0) {
-        data <- data %>% filter(game_date %in% input$date_filter2)
-      } else {
-        data <- NULL
-      }
-      data
-    })
     
     # ---- 8. Summary function ------------------------------------------
     summarize_player_data <- function(data) {
@@ -555,39 +499,6 @@ stuffPlusServer <- function(id) {
         )
     })
     
-    output$results_table_season2 <- renderDT({
-      data <- get_season_data2()
-      req(!is.null(data))
-      
-      summary_data <- summarize_player_data(data) %>%
-        mutate(
-          Count = format(Count, big.mark = ","),
-          across(c(`Velocity`, `iVB`, `HB`, `vRel`, `hRel`, `Extension`),
-                 ~ifelse(is.na(.), "-", as.character(.))),
-          across(c(`Spin`, `Axis`, `Stuff+`),
-                 ~ifelse(is.na(.), "-", format(., big.mark = ","))),
-          across(c(`Zone%`, `Chase%`, `Whiff%`),
-                 ~paste0(., "%"))
-        )
-      
-      datatable(
-        summary_data,
-        options = list(
-          dom = "t",
-          ordering = FALSE,
-          columnDefs = list(
-            list(className = "dt-center", targets = "_all"),
-            list(width = "100px", targets = 0),
-            list(width = "60px", targets = c(1:9)),
-            list(width = "70px", targets = c(10:13))
-          )
-        ),
-        rownames = FALSE,
-        escape = FALSE
-      ) %>%
-        formatStyle(columns = 1:ncol(summary_data), fontSize = '14px') %>%
-        formatStyle("Pitch Type", fontWeight = styleEqual("All Pitches", "bold"))
-    })
     
     output$results_table1 <- renderDT({
       data <- get_date_data1()
@@ -625,41 +536,6 @@ stuffPlusServer <- function(id) {
         }
     })
     
-    output$results_table2 <- renderDT({
-      data <- get_date_data2()
-      req(!is.null(data))
-      summarize_player_data(data) %>%
-        {
-          summary_data <- .
-          summary_data <- summary_data %>%
-            mutate(
-              Count = format(Count, big.mark = ","),
-              across(c(`Velocity`, `iVB`, `HB`, `vRel`, `hRel`, `Extension`),
-                     ~ifelse(is.na(.), "-", as.character(.))),
-              across(c(`Spin`, `Axis`, `Stuff+`),
-                     ~ifelse(is.na(.), "-", format(., big.mark = ","))),
-              across(c(`Zone%`, `Chase%`, `Whiff%`),
-                     ~paste0(., "%"))
-            )
-          datatable(
-            summary_data,
-            options = list(
-              dom = "t",
-              ordering = FALSE,
-              columnDefs = list(
-                list(className = "dt-center", targets = "_all"),
-                list(width = "100px", targets = 0),
-                list(width = "60px", targets = c(1:9)),
-                list(width = "70px", targets = c(10:13))
-              )
-            ),
-            rownames = FALSE,
-            escape = FALSE
-          ) %>%
-            formatStyle(columns = 1:ncol(summary_data), fontSize = '14px') %>%
-            formatStyle("Pitch Type", fontWeight = styleEqual("All Pitches", "bold"))
-        }
-    })
     
     output$season_summary_ui <- renderUI({
       data <- get_season_data()
@@ -672,16 +548,6 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$season_summary2_ui <- renderUI({
-      data <- get_season_data2()
-      if (is.null(data) || nrow(data) == 0) return(NULL)
-      ns <- session$ns
-      years <- sort(unique(data$year))
-      tagList(
-        h3(paste("Season Summary for:", paste(years, collapse = ", ")), class = "mt-3"),
-        div(class = "data-table-container", DTOutput(ns("results_table_season2")))
-      )
-    })
     
     output$summary_set1_ui <- renderUI({
       data <- get_date_data1()
@@ -694,15 +560,5 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$summary_set2_ui <- renderUI({
-      data <- get_date_data2()
-      if (is.null(data)) return(NULL)
-      ns <- session$ns
-      dates <- format(as.Date(input$date_filter2), "%b %d, %Y")
-      tagList(
-        h3(paste("Summary for:", paste(dates, collapse = ", "))),
-        div(class = "data-table-container", DTOutput(ns("results_table2")))
-      )
-    })
   })
 }
