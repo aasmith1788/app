@@ -158,7 +158,6 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
-          overflow-x: auto;
         }
 
         .plot-row {
@@ -800,7 +799,7 @@ stuffPlusServer <- function(id) {
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
-            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "180px"))
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "250px"))
         ),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
@@ -826,7 +825,7 @@ stuffPlusServer <- function(id) {
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
-            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "180px"))
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "250px"))
         ),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
