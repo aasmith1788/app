@@ -729,7 +729,7 @@ stuffPlusServer <- function(id) {
     }
 
 
-    # ---- 11c. Stuff+ by outing plot function ----------------------
+    # ---- 11c. Rolling Stuff+ by pitch function ----------------------
     create_stuffplus_plot <- function(player_df) {
       if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
 
@@ -737,20 +737,19 @@ stuffPlusServer <- function(id) {
         count(pitch_type, sort = TRUE) %>%
         pull(pitch_type)
 
-      outing_means <- player_df %>%
+      pitch_means <- player_df %>%
+        arrange(game_date, pitch_number) %>%
         mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
-        arrange(game_date) %>%
-        group_by(game_date, pitch_type) %>%
-        summarise(avg_stuff = mean(stuff_plus, na.rm = TRUE), .groups = "drop") %>%
         group_by(pitch_type) %>%
-        mutate(outing = row_number()) %>%
+        mutate(pitch_idx = row_number(),
+               avg_stuff = cummean(stuff_plus)) %>%
         ungroup()
 
-      ggplot(outing_means, aes(x = outing, y = avg_stuff, colour = pitch_type)) +
+      ggplot(pitch_means, aes(x = pitch_idx, y = avg_stuff, colour = pitch_type)) +
         geom_line(size = 0.8) +
         geom_point(size = 1.5) +
         scale_y_continuous(limits = c(70, 130)) +
-        labs(title = "Stuff+ by Outing", x = "Outing", y = "Avg Stuff+") +
+        labs(title = "Rolling Stuff+ by Pitch", x = "Pitch #", y = "Avg Stuff+") +
         theme_minimal(base_size = 9) +
         theme(plot.title = element_text(hjust = 0.5, size = 10),
               legend.position = "none")
