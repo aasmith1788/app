@@ -54,7 +54,7 @@ stuffPlusUI <- function(id) {
         
         .player-panel {
           background: white;
-          overflow: hidden;
+          overflow: visible;
         }
         
         .filter-bar {
@@ -793,8 +793,8 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
       tagList(
-        plotOutput(ns("velocity_plot1"), height = plot_height),
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        plotOutput(ns("velocity_plot1"), height = plot_height),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
     })
@@ -818,8 +818,8 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       plot_height <- paste0(60 * length(unique(data$pitch_type)), "px")
       tagList(
-        plotOutput(ns("velocity_plot2"), height = plot_height),
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        plotOutput(ns("velocity_plot2"), height = plot_height),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
     })
