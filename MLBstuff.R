@@ -157,6 +157,7 @@ stuffPlusUI <- function(id) {
         
         .data-table-container {
           margin-top: 8px;
+          overflow-x: auto;
         }
         
         table.dataTable {
@@ -695,6 +696,7 @@ stuffPlusServer <- function(id) {
         options = list(
           dom = "t",
           ordering = FALSE,
+          scrollX = TRUE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
             list(width = "25px", targets = 0),  # Type
