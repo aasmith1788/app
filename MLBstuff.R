@@ -741,15 +741,21 @@ stuffPlusServer <- function(id) {
         arrange(game_date, pitch_number) %>%
         mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
         group_by(pitch_type) %>%
-        mutate(pitch_idx = row_number(),
-               avg_stuff = cummean(stuff_plus)) %>%
+        mutate(
+          pitch_idx = row_number(),
+          avg_stuff = as.numeric(stats::filter(
+            stuff_plus,
+            rep(1 / 50, 50),
+            sides = 1
+          ))
+        ) %>%
         ungroup()
 
       ggplot(pitch_means, aes(x = pitch_idx, y = avg_stuff, colour = pitch_type)) +
         geom_line(size = 0.8) +
         geom_point(size = 1.5) +
         scale_y_continuous(limits = c(70, 130)) +
-        labs(title = "Rolling Stuff+ by Pitch", x = "Pitch #", y = "Avg Stuff+") +
+        labs(title = "50-Pitch Rolling Stuff+", x = "Pitch #", y = "Avg Stuff+") +
         theme_minimal(base_size = 9) +
         theme(plot.title = element_text(hjust = 0.5, size = 10),
               legend.position = "none")
