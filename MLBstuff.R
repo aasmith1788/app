@@ -1,11 +1,11 @@
-# =====================================================================
-# modules/mod_stuffplus.R - Two Player Comparison Version
+# modules/mod_stuffplus.R - Two Player Comparison Version (FIXED)
 # =====================================================================
 library(shiny)
 library(dplyr)
 library(readr)
 library(DT)
 library(shinyWidgets)
+library(ggplot2)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -53,7 +53,7 @@ stuffPlusUI <- function(id) {
         
         .player-panel {
           background: white;
-          overflow: hidden;
+          overflow: visible;
         }
         
         .filter-bar {
@@ -158,11 +158,31 @@ stuffPlusUI <- function(id) {
         .data-table-container {
           margin-top: 8px;
         }
-        
+
+        .plot-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .stuffplus-plot-wrapper {
+          width: 33.33%;
+          margin-bottom: 8px;
+        }
+
+        .breaks-plot-wrapper {
+          width: 33.33%;
+          margin-bottom: 8px;
+        }
+
+        .usage-plot-wrapper {
+          width: 33.33%;
+          margin-bottom: 8px;
+        }
+
         table.dataTable {
           font-size: 11px;
           border-collapse: collapse;
-          width: 100% !important;
+          width: 100%;
         }
         
         table.dataTable thead th {
@@ -183,6 +203,7 @@ stuffPlusUI <- function(id) {
           text-align: center;
           color: #1a1a1a;
           font-size: 11px;
+          white-space: nowrap;
         }
         
         table.dataTable tbody tr:hover {
@@ -210,9 +231,6 @@ stuffPlusUI <- function(id) {
           font-size: 13px;
         }
         
-        /* Remove divider between players */
-        
-        /* Compact styles for fitting more data */
         .compact-filters .filter-item {
           flex: initial;
         }
@@ -225,7 +243,6 @@ stuffPlusUI <- function(id) {
           min-width: 150px;
         }
         
-        /* Hide DataTables default styling */
         .dataTables_wrapper .dataTables_length,
         .dataTables_wrapper .dataTables_filter,
         .dataTables_wrapper .dataTables_info,
@@ -716,7 +733,176 @@ stuffPlusServer <- function(id) {
         )
     }
     
-    # ---- 12. Render all tables ---------------------------------------
+    # ---- 11b. Define global pitch color palette ----------------------
+    pitch_colors <- c(
+      "FF" = "#ff6384",     # Four-seam (red)
+      "SI" = "#ff9f40",     # Sinker (orange)
+      "FC" = "#ffcc56",     # Cutter (yellow)
+      "SL" = "#4bc0c0",     # Slider (cyan)
+      "CU" = "#9966ff",     # Curveball (purple)
+      "CH" = "#36a2eb",     # Changeup (blue)
+      "FS" = "#ff99cc",     # Splitter (pink)
+      "KC" = "#99ccff",     # Knuckle curve (light blue)
+      "KN" = "#ff6600",     # Knuckleball (dark orange)
+      "CS" = "#66ff99",     # Slow curve (light green)
+      "EP" = "#cc99ff",     # Eephus (light purple)
+      "FO" = "#ffcc99",     # Forkball (light orange)
+      "SC" = "#99ffcc",     # Screwball (mint)
+      "SV" = "#ff9999"      # Sweeper (light red)
+    )
+    
+    # ---- 11c. Rolling Stuff Plus by pitch function ----------------------
+    create_stuffplus_plot <- function(player_df) {
+      if (is.null(player_df) || nrow(player_df) == 0) {
+        return(ggplot() + 
+                 annotate("text", x = 1, y = 1, label = "No data available", 
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "50 Pitch Rolling Stuff Plus"))
+      }
+      
+      # Check if we have the required columns
+      if (!"stuff_plus" %in% names(player_df) || !"pitch_type" %in% names(player_df)) {
+        return(ggplot() + 
+                 annotate("text", x = 1, y = 1, label = "Missing required data columns", 
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "50 Pitch Rolling Stuff Plus"))
+      }
+      
+      pitch_order <- player_df %>%
+        count(pitch_type, sort = TRUE) %>%
+        pull(pitch_type)
+      
+      # Create the rolling average data
+      pitch_means <- player_df %>%
+        arrange(game_date, pitch_number) %>%
+        mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
+        group_by(pitch_type) %>%
+        filter(n() >= 50) %>%  # Only include pitch types with 50+ pitches
+        mutate(
+          pitch_idx = row_number(),
+          avg_stuff = stats::filter(
+            stuff_plus,
+            rep(1 / 50, 50),
+            sides = 1
+          )
+        ) %>%
+        ungroup() %>%
+        filter(!is.na(avg_stuff))
+      
+      # Check if any data remains after filtering
+      if (nrow(pitch_means) == 0) {
+        return(ggplot() + 
+                 annotate("text", x = 1, y = 1, label = "Need 50+ pitches per pitch type", 
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "50 Pitch Rolling Stuff Plus"))
+      }
+      
+      # Create the plot
+      p <- ggplot(pitch_means, aes(x = pitch_idx, y = avg_stuff, colour = pitch_type)) +
+        geom_line(linewidth = 1.2) +
+        geom_point(size = 0.8) +
+        scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        scale_y_continuous(limits = c(70, 130), 
+                           breaks = seq(70, 130, by = 10)) +
+        scale_x_continuous(breaks = scales::pretty_breaks(n = 6)) +
+        labs(title = "50 Pitch Rolling Stuff Plus", 
+             x = "Pitches", 
+             y = "Stuff Plus") +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          panel.grid.major = element_line(color = "grey85", linewidth = 0.5),
+          panel.grid.minor = element_line(color = "grey92", linewidth = 0.3),
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9),
+          legend.position = "none",
+          panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)
+        )
+      
+      return(p)
+    }
+    
+    # ---- 11d. Pitch Breaks scatter plot function ------------------------
+    create_pitch_breaks_plot <- function(player_df) {
+      if (is.null(player_df) || nrow(player_df) == 0) return(NULL)
+      
+      # Get pitcher handedness (should be consistent for one player)
+      pitcher_handedness <- player_df$p_throws[1]
+      
+      plot_data <- player_df %>%
+        mutate(
+          # Adjust horizontal break based on handedness
+          # For consistent "Arm Side" (left) and "Glove Side" (right) view
+          horizontal_break = case_when(
+            p_throws == "R" ~ pfx_x,     # Righties: use as-is
+            p_throws == "L" ~ -pfx_x,    # Lefties: flip sign
+            TRUE ~ pfx_x
+          ),
+          vertical_break = pfx_z
+        ) %>%
+        filter(!is.na(horizontal_break), !is.na(vertical_break))
+      
+      if (nrow(plot_data) == 0) {
+        return(ggplot() + 
+                 annotate("text", x = 0, y = 0, label = "No break data available", 
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Breaks"))
+      }
+      
+      ggplot(plot_data, aes(x = horizontal_break, y = vertical_break, color = pitch_type)) +
+        geom_point(size = 1.5, alpha = 0.7) +
+        geom_hline(yintercept = 0, color = "black", size = 0.5) +
+        geom_vline(xintercept = 0, color = "black", size = 0.5) +
+        scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        scale_x_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10),
+          labels = c("20", "10", "0", "10", "20")
+        ) +
+        scale_y_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10)
+        ) +
+        # Add single arm side and glove side labels
+        annotate("text", x = -15, y = -23, label = "Arm Side", 
+                 size = 3, hjust = 0.5, fontface = "bold") +
+        annotate("text", x = 15, y = -23, label = "Glove Side", 
+                 size = 3, hjust = 0.5, fontface = "bold") +
+        labs(
+          title = "Pitch Breaks",
+          x = "Horizontal Break (in)",
+          y = "Induced Vertical Break (in)"
+        ) +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          panel.grid.major = element_line(color = "grey85", size = 0.5),
+          panel.grid.minor = element_line(color = "grey92", size = 0.3),
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
+          legend.position = "none",
+          panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)
+        )
+    }
+    
+    # ---- 11e. REMOVED - Pitch Usage plot function removed -----------
+    # Pitch usage plot has been removed per user request
+    create_pitch_usage_plot <- function(player_df) {
+      return(NULL)
+    }
+    
+    # ---- 12. Render all tables and plots -----------------------------
     # Player 1 tables
     output$season_table1 <- renderDT({
       req(player1_data())
@@ -741,6 +927,33 @@ stuffPlusServer <- function(id) {
       create_compact_table(data)
     })
     
+    # Stuff+ plots
+    output$stuffplus_plot1 <- renderPlot({
+      create_stuffplus_plot(get_season_data1())
+    })
+    
+    output$stuffplus_plot2 <- renderPlot({
+      create_stuffplus_plot(get_season_data2())
+    })
+    
+    # Pitch breaks plots
+    output$pitch_breaks_plot1 <- renderPlot({
+      create_pitch_breaks_plot(get_season_data1())
+    })
+    
+    output$pitch_breaks_plot2 <- renderPlot({
+      create_pitch_breaks_plot(get_season_data2())
+    })
+    
+    # Pitch usage plots
+    output$pitch_usage_plot1 <- renderPlot({
+      create_pitch_usage_plot(get_season_data1())
+    })
+    
+    output$pitch_usage_plot2 <- renderPlot({
+      create_pitch_usage_plot(get_season_data2())
+    })
+    
     # ---- 13. Summary UIs ---------------------------------------------
     # Player 1
     output$season_summary_ui1 <- renderUI({
@@ -750,6 +963,11 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
+            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot1"), height = "300px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table1")))
       )
     })
@@ -773,6 +991,11 @@ stuffPlusServer <- function(id) {
       years <- sort(unique(data$year))
       tagList(
         h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
+            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot2"), height = "300px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("season_table2")))
       )
     })
