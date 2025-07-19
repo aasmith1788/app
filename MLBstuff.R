@@ -897,6 +897,7 @@ stuffPlusServer <- function(id) {
     }
     
     # ---- 11e. Batter handedness pitch usage plot --------------------
+    }
     create_pitch_usage_plot <- function(player_df) {
       if (is.null(player_df) || nrow(player_df) == 0) {
         return(ggplot() +
@@ -907,15 +908,21 @@ stuffPlusServer <- function(id) {
                  labs(title = "Pitch Usage by Batter Side"))
       }
 
+      pitch_order <- player_df %>%
+        filter(!is.na(pitch_type)) %>%
+        count(pitch_type, sort = TRUE) %>%
+        pull(pitch_type)
+
       plot_data <- player_df %>%
         filter(!is.na(pitch_type), !is.na(stand)) %>%
+        mutate(pitch_type = factor(pitch_type, levels = pitch_order)) %>%
         group_by(stand, pitch_type) %>%
         summarise(count = n(), .groups = "drop") %>%
         group_by(stand) %>%
         mutate(percent = 100 * count / sum(count)) %>%
         ungroup() %>%
         mutate(direction = ifelse(stand == "L", -percent, percent),
-               stand_label = ifelse(stand == "L", "LHB", "RHB"))
+               label_x = ifelse(direction < 0, direction - 5, direction + 5))
 
       if (nrow(plot_data) == 0) {
         return(ggplot() +
@@ -926,9 +933,17 @@ stuffPlusServer <- function(id) {
                  labs(title = "Pitch Usage by Batter Side"))
       }
 
-      ggplot(plot_data, aes(x = direction, y = stand_label, fill = pitch_type)) +
+      label_y <- length(unique(plot_data$pitch_type)) + 0.7
+
+      ggplot(plot_data, aes(x = direction, y = pitch_type, fill = pitch_type)) +
         geom_col(color = "black", width = 0.6) +
-        geom_vline(xintercept = 0, color = "black", size = 0.5) +
+        geom_text(aes(x = label_x, label = sprintf("%.0f%%", percent)),
+                  size = 3) +
+        geom_vline(xintercept = 0, color = "black", linewidth = 0.5) +
+        annotate("text", x = -50, y = label_y, label = "vs LHH",
+                 size = 3, fontface = "bold") +
+        annotate("text", x = 50, y = label_y, label = "vs RHH",
+                 size = 3, fontface = "bold") +
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
         scale_x_continuous(
           labels = function(x) paste0(abs(x), "%"),
@@ -936,7 +951,7 @@ stuffPlusServer <- function(id) {
         ) +
         labs(
           title = "Pitch Usage by Batter Side",
-          subtitle = "LHB left, RHB right",
+          subtitle = "LHH left, RHH right",
           x = "Usage %",
           y = NULL,
           fill = "Pitch"
