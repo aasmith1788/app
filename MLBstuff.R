@@ -896,10 +896,56 @@ stuffPlusServer <- function(id) {
         )
     }
     
-    # ---- 11e. REMOVED - Pitch Usage plot function removed -----------
-    # Pitch usage plot has been removed per user request
+    # ---- 11e. Batter handedness pitch usage plot --------------------
     create_pitch_usage_plot <- function(player_df) {
-      return(NULL)
+      if (is.null(player_df) || nrow(player_df) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 1, y = 1, label = "No data available",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Usage by Batter Side"))
+      }
+
+      plot_data <- player_df %>%
+        filter(!is.na(pitch_type), !is.na(stand)) %>%
+        group_by(stand, pitch_type) %>%
+        summarise(count = n(), .groups = "drop") %>%
+        group_by(stand) %>%
+        mutate(percent = 100 * count / sum(count)) %>%
+        ungroup()
+
+      if (nrow(plot_data) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 1, y = 1, label = "No usage data",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Usage by Batter Side"))
+      }
+
+      ggplot(plot_data, aes(x = stand, y = percent, fill = pitch_type)) +
+        geom_col(color = "black", width = 0.6) +
+        scale_fill_manual(values = pitch_colors, na.value = "grey50") +
+        scale_y_continuous(labels = scales::percent_format(scale = 1),
+                           limits = c(0, 100)) +
+        labs(
+          title = "Pitch Usage by Batter Side",
+          x = "Batter Stand",
+          y = "Usage %",
+          fill = "Pitch"
+        ) +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          panel.grid.major = element_line(color = "grey85", size = 0.5),
+          panel.grid.minor = element_line(color = "grey92", size = 0.3),
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9),
+          legend.position = "none",
+          panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)
+        )
     }
     
     # ---- 12. Render all tables and plots -----------------------------
