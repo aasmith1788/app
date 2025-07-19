@@ -897,7 +897,6 @@ stuffPlusServer <- function(id) {
     }
     
     # ---- 11e. Batter handedness pitch usage plot --------------------
-    }
     create_pitch_usage_plot <- function(player_df) {
       if (is.null(player_df) || nrow(player_df) == 0) {
         return(ggplot() +
