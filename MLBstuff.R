@@ -900,7 +900,7 @@ stuffPlusServer <- function(id) {
     create_pitch_usage_plot <- function(player_df) {
       if (is.null(player_df) || nrow(player_df) == 0) {
         return(ggplot() +
-                 annotate("text", x = 1, y = 1, label = "No data available",
+                 annotate("text", x = 0, y = 0, label = "No data available",
                           size = 3, hjust = 0.5) +
                  theme_void() +
                  theme(plot.title = element_text(hjust = 0.5, size = 12)) +
@@ -913,31 +913,38 @@ stuffPlusServer <- function(id) {
         summarise(count = n(), .groups = "drop") %>%
         group_by(stand) %>%
         mutate(percent = 100 * count / sum(count)) %>%
-        ungroup()
+        ungroup() %>%
+        mutate(direction = ifelse(stand == "L", -percent, percent),
+               stand_label = ifelse(stand == "L", "LHB", "RHB"))
 
       if (nrow(plot_data) == 0) {
         return(ggplot() +
-                 annotate("text", x = 1, y = 1, label = "No usage data",
+                 annotate("text", x = 0, y = 0, label = "No usage data",
                           size = 3, hjust = 0.5) +
                  theme_void() +
                  theme(plot.title = element_text(hjust = 0.5, size = 12)) +
                  labs(title = "Pitch Usage by Batter Side"))
       }
 
-      ggplot(plot_data, aes(x = stand, y = percent, fill = pitch_type)) +
+      ggplot(plot_data, aes(x = direction, y = stand_label, fill = pitch_type)) +
         geom_col(color = "black", width = 0.6) +
+        geom_vline(xintercept = 0, color = "black", size = 0.5) +
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
-        scale_y_continuous(labels = scales::percent_format(scale = 1),
-                           limits = c(0, 100)) +
+        scale_x_continuous(
+          labels = function(x) paste0(abs(x), "%"),
+          limits = c(-100, 100)
+        ) +
         labs(
           title = "Pitch Usage by Batter Side",
-          x = "Batter Stand",
-          y = "Usage %",
+          subtitle = "LHB left, RHB right",
+          x = "Usage %",
+          y = NULL,
           fill = "Pitch"
         ) +
         theme_minimal(base_size = 11) +
         theme(
           plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5, size = 10),
           panel.grid.major = element_line(color = "grey85", size = 0.5),
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
