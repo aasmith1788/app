@@ -6,6 +6,7 @@ library(readr)
 library(DT)
 library(shinyWidgets)
 library(ggplot2)
+library(ggforce)
 library(httr)
 library(jsonlite)
 library(glue)
@@ -1117,8 +1118,19 @@ stuffPlusServer <- function(id) {
                  theme_void() +
                  theme(plot.title = element_text(hjust = 0.5, size = 12)) +
                  labs(title = paste("Pitch Location vs",
-                                   ifelse(batter_side == "R", "RHB", "LHB"))))
+                                   ifelse(batter_side == "R", "RHB", "LHB"),
+                                   "(Catcher's View)")))
       }
+
+      summary_data <- plot_data %>%
+        group_by(pitch_type) %>%
+        summarise(
+          mean_x = mean(plate_x, na.rm = TRUE),
+          mean_z = mean(plate_z, na.rm = TRUE),
+          sd_x = sd(plate_x, na.rm = TRUE),
+          sd_z = sd(plate_z, na.rm = TRUE),
+          .groups = "drop"
+        )
 
       zone_width <- 17 / 12
       zone_height <- 26 / 12
@@ -1127,9 +1139,9 @@ stuffPlusServer <- function(id) {
       zone_bottom <- 1.5
       zone_top <- zone_bottom + zone_height
 
-      ggplot(plot_data, aes(x = plate_x, y = plate_z, colour = pitch_type, fill = pitch_type)) +
-        stat_ellipse(level = 0.68, geom = "polygon", alpha = 0.2, colour = NA) +
-        stat_summary(fun = mean, geom = "point", size = 2) +
+      ggplot(summary_data, aes(x0 = mean_x, y0 = mean_z, a = sd_x, b = sd_z, colour = pitch_type, fill = pitch_type)) +
+        ggforce::geom_ellipse(alpha = 0.2, colour = NA) +
+        geom_point(aes(x = mean_x, y = mean_z), size = 2) +
         geom_rect(xmin = zone_left, xmax = zone_right,
                   ymin = zone_bottom, ymax = zone_top,
                   colour = "black", fill = NA, linewidth = 0.5) +
@@ -1137,7 +1149,8 @@ stuffPlusServer <- function(id) {
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
         coord_fixed(xlim = c(-2, 2), ylim = c(0, 5)) +
         labs(title = paste("Pitch Location vs",
-                           ifelse(batter_side == "R", "RHB", "LHB")),
+                           ifelse(batter_side == "R", "RHB", "LHB"),
+                           "(Catcher's View)"),
              x = "Plate X (ft)", y = "Plate Z (ft)") +
         theme_minimal(base_size = 11) +
         theme(
