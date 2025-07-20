@@ -1172,7 +1172,7 @@ stuffPlusServer <- function(id) {
       df <- df %>%
         transmute(
           Season = season,
-          GameType = gameType,
+          IP = round(as.numeric(stat.inningsPitched), 1),
           ERA = round(as.numeric(stat.era), 2),
           FIP = round(((13 * as.numeric(stat.homeRuns)) +
                         (3 * (as.numeric(stat.baseOnBalls) + as.numeric(stat.hitByPitch))) -
