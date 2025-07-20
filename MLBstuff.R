@@ -1093,7 +1093,66 @@ stuffPlusServer <- function(id) {
           plot.background = element_rect(fill = "white", color = NA)
         )
     }
-    
+
+    # ---- 11e. Pitch location plot by batter side --------------------
+    create_pitch_location_plot <- function(player_df, batter_side = "R") {
+      if (is.null(player_df) || nrow(player_df) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No data available",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = paste("Pitch Location vs",
+                                   ifelse(batter_side == "R", "RHB", "LHB"))))
+      }
+
+      plot_data <- player_df %>%
+        filter(stand == batter_side,
+               !is.na(plate_x), !is.na(plate_z))
+
+      if (nrow(plot_data) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No location data",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = paste("Pitch Location vs",
+                                   ifelse(batter_side == "R", "RHB", "LHB"))))
+      }
+
+      zone_width <- 17 / 12
+      zone_height <- 26 / 12
+      zone_left <- -zone_width / 2
+      zone_right <- zone_width / 2
+      zone_bottom <- 1.5
+      zone_top <- zone_bottom + zone_height
+
+      ggplot(plot_data, aes(x = plate_x, y = plate_z, colour = pitch_type, fill = pitch_type)) +
+        stat_ellipse(level = 0.68, geom = "polygon", alpha = 0.2, colour = NA) +
+        stat_summary(fun = mean, geom = "point", size = 2) +
+        geom_rect(xmin = zone_left, xmax = zone_right,
+                  ymin = zone_bottom, ymax = zone_top,
+                  colour = "black", fill = NA, linewidth = 0.5) +
+        scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        scale_fill_manual(values = pitch_colors, na.value = "grey50") +
+        coord_fixed(xlim = c(-2, 2), ylim = c(0, 5)) +
+        labs(title = paste("Pitch Location vs",
+                           ifelse(batter_side == "R", "RHB", "LHB")),
+             x = "Plate X (ft)", y = "Plate Z (ft)") +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          panel.grid.major = element_line(color = "grey85", size = 0.5),
+          panel.grid.minor = element_line(color = "grey92", size = 0.3),
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
+          legend.position = "none",
+          panel.background = element_rect(fill = "white", color = NA),
+          plot.background = element_rect(fill = "white", color = NA)
+        )
+    }
+
     # ---- 11e. Batter handedness pitch usage plot --------------------
     create_pitch_usage_plot <- function(player_df) {
       if (is.null(player_df) || nrow(player_df) == 0) {
@@ -1296,9 +1355,34 @@ stuffPlusServer <- function(id) {
     output$pitch_usage_plot1 <- renderPlot({
       create_pitch_usage_plot(get_season_data1())
     })
-    
+
     output$pitch_usage_plot2 <- renderPlot({
       create_pitch_usage_plot(get_season_data2())
+    })
+
+    # Game-specific plots
+    output$game_breaks_plot1 <- renderPlot({
+      create_pitch_breaks_plot(get_game_data1())
+    })
+
+    output$game_breaks_plot2 <- renderPlot({
+      create_pitch_breaks_plot(get_game_data2())
+    })
+
+    output$location_rhb_plot1 <- renderPlot({
+      create_pitch_location_plot(get_game_data1(), "R")
+    })
+
+    output$location_lhb_plot1 <- renderPlot({
+      create_pitch_location_plot(get_game_data1(), "L")
+    })
+
+    output$location_rhb_plot2 <- renderPlot({
+      create_pitch_location_plot(get_game_data2(), "R")
+    })
+
+    output$location_lhb_plot2 <- renderPlot({
+      create_pitch_location_plot(get_game_data2(), "L")
     })
     
     # ---- 13. Summary UIs ---------------------------------------------
@@ -1343,6 +1427,11 @@ stuffPlusServer <- function(id) {
       }
       tagList(
         h3(paste("Games", date_text), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "plot-row",
+            div(class = "breaks-plot-wrapper", plotOutput(ns("game_breaks_plot1"), height = "300px")),
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("location_rhb_plot1"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("location_lhb_plot1"), height = "300px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("game_table1")))
       )
     })
@@ -1399,6 +1488,11 @@ stuffPlusServer <- function(id) {
       }
       tagList(
         h3(paste("Games", date_text), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "plot-row",
+            div(class = "breaks-plot-wrapper", plotOutput(ns("game_breaks_plot2"), height = "300px")),
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("location_rhb_plot2"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("location_lhb_plot2"), height = "300px"))
+        ),
         div(class = "data-table-container", DTOutput(ns("game_table2")))
       )
     })
