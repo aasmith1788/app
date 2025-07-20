@@ -313,6 +313,12 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "filter-item",
+                        span(class = "filter-label", "Logs Range:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("logs_range_filter_ui1"))
+                        )
+                    ),
+                    div(class = "filter-item",
                         span(class = "filter-label", "Season Stats:"),
                         div(class = "filter-control",
                             uiOutput(ns("stats_year_filter_ui1"))
@@ -354,6 +360,12 @@ stuffPlusUI <- function(id) {
                         span(class = "filter-label", "Game Logs:"),
                         div(class = "filter-control",
                             uiOutput(ns("logs_year_filter_ui2"))
+                        )
+                    ),
+                    div(class = "filter-item",
+                        span(class = "filter-label", "Logs Range:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("logs_range_filter_ui2"))
                         )
                     ),
                     div(class = "filter-item",
@@ -632,6 +644,15 @@ stuffPlusServer <- function(id) {
         )
       )
     })
+
+    output$logs_range_filter_ui1 <- renderUI({
+      ns <- session$ns
+      selectInput(ns("logs_range1"), label = NULL,
+                  choices = c("All Games" = 0,
+                              "Last 10 Games" = 10,
+                              "Last 20 Games" = 20),
+                  selected = 0)
+    })
     
     output$date_filter_ui1 <- renderUI({
       req(player1_data())
@@ -744,6 +765,15 @@ stuffPlusServer <- function(id) {
         )
       )
     })
+
+    output$logs_range_filter_ui2 <- renderUI({
+      ns <- session$ns
+      selectInput(ns("logs_range2"), label = NULL,
+                  choices = c("All Games" = 0,
+                              "Last 10 Games" = 10,
+                              "Last 20 Games" = 20),
+                  selected = 0)
+    })
     
     # ---- 8. Data helpers for both players ----------------------------
     get_season_data1 <- reactive({
@@ -796,8 +826,13 @@ stuffPlusServer <- function(id) {
         return(NULL)
       }
       player_id <- unique(player1_data()$pitcher)[1]
-      bind_rows(lapply(input$logs_year_filter1,
-                       function(y) get_pitcher_game_logs_api(player_id, y)))
+      df <- bind_rows(lapply(input$logs_year_filter1,
+                             function(y) get_pitcher_game_logs_api(player_id, y)))
+      if (!is.null(df) && !is.null(input$logs_range1) && input$logs_range1 > 0) {
+        date_col <- df[[intersect(c("gameDate", "date", "Date"), names(df))[1]]]
+        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(input$logs_range1)
+      }
+      df
     })
 
     game_logs_data2 <- reactive({
@@ -806,8 +841,13 @@ stuffPlusServer <- function(id) {
         return(NULL)
       }
       player_id <- unique(player2_data()$pitcher)[1]
-      bind_rows(lapply(input$logs_year_filter2,
-                       function(y) get_pitcher_game_logs_api(player_id, y)))
+      df <- bind_rows(lapply(input$logs_year_filter2,
+                             function(y) get_pitcher_game_logs_api(player_id, y)))
+      if (!is.null(df) && !is.null(input$logs_range2) && input$logs_range2 > 0) {
+        date_col <- df[[intersect(c("gameDate", "date", "Date"), names(df))[1]]]
+        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(input$logs_range2)
+      }
+      df
     })
 
     season_stats_data1 <- reactive({
@@ -1103,8 +1143,9 @@ stuffPlusServer <- function(id) {
                           size = 3, hjust = 0.5) +
                  theme_void() +
                  theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-                 labs(title = paste("Pitch Location vs",
-                                   ifelse(batter_side == "R", "RHB", "LHB"))))
+                 labs(title = ifelse(batter_side == "R",
+                                    "RHB Location (Catcher's View)",
+                                    "LHB Location (Catcher's View)")))
       }
 
       plot_data <- player_df %>%
@@ -1117,9 +1158,9 @@ stuffPlusServer <- function(id) {
                           size = 3, hjust = 0.5) +
                  theme_void() +
                  theme(plot.title = element_text(hjust = 0.5, size = 12)) +
-                 labs(title = paste("Pitch Location vs",
-                                   ifelse(batter_side == "R", "RHB", "LHB"),
-                                   "(Catcher's View)")))
+                 labs(title = ifelse(batter_side == "R",
+                                    "RHB Location (Catcher's View)",
+                                    "LHB Location (Catcher's View)")))
       }
 
       summary_data <- plot_data %>%
@@ -1149,9 +1190,9 @@ stuffPlusServer <- function(id) {
         scale_colour_manual(values = pitch_colors, na.value = "grey50") +
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
         coord_fixed(xlim = c(-2, 2), ylim = c(0, 5)) +
-        labs(title = paste("Pitch Location vs",
-                           ifelse(batter_side == "R", "RHB", "LHB"),
-                           "(Catcher's View)"),
+        labs(title = ifelse(batter_side == "R",
+                           "RHB Location (Catcher's View)",
+                           "LHB Location (Catcher's View)"),
              x = "Plate X (ft)", y = "Plate Z (ft)") +
         theme_minimal(base_size = 11) +
         theme(
@@ -1422,8 +1463,10 @@ stuffPlusServer <- function(id) {
       if (is.null(data)) return(NULL)
       ns <- session$ns
       years_text <- paste(sort(input$logs_year_filter1), collapse = ", ")
+      range_text <- if (!is.null(input$logs_range1) && input$logs_range1 > 0)
+        paste("- Last", input$logs_range1, "Games") else "- All Games"
       tagList(
-        h3(paste("Game Logs:", years_text), class = "section-title", style = "margin-top: 16px;"),
+        h3(paste("Game Logs:", years_text, range_text), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table1")))
       )
     })
@@ -1483,8 +1526,10 @@ stuffPlusServer <- function(id) {
       if (is.null(data)) return(NULL)
       ns <- session$ns
       years_text <- paste(sort(input$logs_year_filter2), collapse = ", ")
+      range_text <- if (!is.null(input$logs_range2) && input$logs_range2 > 0)
+        paste("- Last", input$logs_range2, "Games") else "- All Games"
       tagList(
-        h3(paste("Game Logs:", years_text), class = "section-title", style = "margin-top: 16px;"),
+        h3(paste("Game Logs:", years_text, range_text), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table2")))
       )
     })
