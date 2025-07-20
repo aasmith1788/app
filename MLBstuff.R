@@ -1525,13 +1525,13 @@ stuffPlusServer <- function(id) {
           h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
           lapply(years, function(y) {
             tagList(
+              h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
               div(class = "plot-row",
                   div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot1_", y)), height = "300px")),
                   div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot1_", y)), height = "300px")),
                   div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot1_", y)), height = "300px"))
               ),
               div(class = "data-table-container",
-                  h4(paste("Season", y)),
                   DTOutput(ns(paste0("season_table1_", y)))
               )
             )
@@ -1607,13 +1607,13 @@ stuffPlusServer <- function(id) {
           h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
           lapply(years, function(y) {
             tagList(
+              h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
               div(class = "plot-row",
                   div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot2_", y)), height = "300px")),
                   div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot2_", y)), height = "300px")),
                   div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot2_", y)), height = "300px"))
               ),
               div(class = "data-table-container",
-                  h4(paste("Season", y)),
                   DTOutput(ns(paste0("season_table2_", y)))
               )
             )
