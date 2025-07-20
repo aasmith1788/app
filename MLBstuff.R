@@ -1138,23 +1138,28 @@ stuffPlusServer <- function(id) {
     prepare_game_logs_table <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
 
+      date_col <- if ("date" %in% names(df)) df$date else df$gameDate
+
       df <- df %>%
         transmute(
           Season = season,
-          Date = as.Date(gameDate),
+          Date = as.Date(date_col),
           GameType = gameType,
           IsHome = isHome,
           IsWin = isWin,
           summary = stat.summary
         ) %>%
         mutate(
-          IP = as.numeric(str_extract(summary, "^[0-9.]+")),
-          ER = as.integer(str_extract(summary, "(?<=, )([0-9]+) ER")),
-          Ks = ifelse(str_detect(summary, "[0-9]+ K"),
-                      as.integer(str_extract(summary, "([0-9]+) K")),
+          IP = {
+            ip_raw <- as.numeric(str_extract(summary, "^[0-9.]+"))
+            floor(ip_raw) + (ip_raw - floor(ip_raw)) * 10 / 3
+          },
+          ER = as.integer(str_extract(summary, "(?<=, )\d+(?= ER)")),
+          Ks = ifelse(str_detect(summary, "\d+ K"),
+                      as.integer(str_extract(summary, "\d+(?= K)")),
                       ifelse(str_detect(summary, " K"), 1L, 0L)),
-          BB = ifelse(str_detect(summary, "[0-9]+ BB"),
-                      as.integer(str_extract(summary, "([0-9]+) BB")),
+          BB = ifelse(str_detect(summary, "\d+ BB"),
+                      as.integer(str_extract(summary, "\d+(?= BB)")),
                       ifelse(str_detect(summary, " BB"), 1L, 0L))
         ) %>%
         select(-summary)
