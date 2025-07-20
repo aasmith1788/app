@@ -921,7 +921,6 @@ stuffPlusServer <- function(id) {
         mutate(percent = 100 * count / sum(count)) %>%
         ungroup() %>%
         mutate(direction = ifelse(stand == "L", -percent, percent),
-               label_x = ifelse(direction < 0, direction - 5, direction + 5))
 
       if (nrow(plot_data) == 0) {
         return(ggplot() +
@@ -936,12 +935,10 @@ stuffPlusServer <- function(id) {
 
       ggplot(plot_data, aes(x = direction, y = pitch_type, fill = pitch_type)) +
         geom_col(color = "black", width = 0.6) +
-        geom_text(aes(x = label_x, label = sprintf("%.0f%%", percent)),
-                  size = 3) +
         geom_vline(xintercept = 0, color = "black", linewidth = 0.5) +
-        annotate("text", x = -50, y = label_y, label = "vs LHH",
+        annotate("text", x = -50, y = label_y, label = "LHB",
                  size = 3, fontface = "bold") +
-        annotate("text", x = 50, y = label_y, label = "vs RHH",
+        annotate("text", x = 50, y = label_y, label = "RHB",
                  size = 3, fontface = "bold") +
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
         scale_x_continuous(
@@ -950,7 +947,7 @@ stuffPlusServer <- function(id) {
         ) +
         labs(
           title = "Pitch Usage by Batter Side",
-          subtitle = "LHH left, RHH right",
+          subtitle = "LHB              RHB",
           x = "Usage %",
           y = NULL,
           fill = "Pitch"
