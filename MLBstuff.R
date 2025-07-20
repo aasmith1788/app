@@ -527,6 +527,7 @@ stuffPlusServer <- function(id) {
           ),
           uiOutput(ns("season_summary_ui1")),
           uiOutput(ns("game_summary_ui1")),
+          uiOutput(ns("game_logs_ui1")),
           uiOutput(ns("season_stats_ui1"))
         )
       }
@@ -560,6 +561,7 @@ stuffPlusServer <- function(id) {
           ),
           uiOutput(ns("season_summary_ui2")),
           uiOutput(ns("game_summary_ui2")),
+          uiOutput(ns("game_logs_ui2")),
           uiOutput(ns("season_stats_ui2"))
         )
       }
@@ -1288,13 +1290,24 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$game_summary_ui1 <- renderUI({
+    output$game_logs_ui1 <- renderUI({
       data <- game_logs_data1()
       if (is.null(data)) return(NULL)
       ns <- session$ns
       tagList(
         h3(paste("Game Logs:", input$logs_year_filter1), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table1")))
+      )
+    })
+
+    output$game_summary_ui1 <- renderUI({
+      data <- get_game_data1()
+      if (is.null(data)) return(NULL)
+      ns <- session$ns
+      dates <- format(as.Date(input$date_filter1), "%b %d")
+      tagList(
+        h3(paste("Games:", paste(dates, collapse = ", ")), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("game_table1")))
       )
     })
 
@@ -1325,13 +1338,24 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$game_summary_ui2 <- renderUI({
+    output$game_logs_ui2 <- renderUI({
       data <- game_logs_data2()
       if (is.null(data)) return(NULL)
       ns <- session$ns
       tagList(
         h3(paste("Game Logs:", input$logs_year_filter2), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table2")))
+      )
+    })
+
+    output$game_summary_ui2 <- renderUI({
+      data <- get_game_data2()
+      if (is.null(data)) return(NULL)
+      ns <- session$ns
+      dates <- format(as.Date(input$date_filter2), "%b %d")
+      tagList(
+        h3(paste("Games:", paste(dates, collapse = ", ")), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("game_table2")))
       )
     })
 
