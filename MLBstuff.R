@@ -10,7 +10,6 @@ library(httr)
 library(jsonlite)
 library(glue)
 library(purrr)
-library(stringr)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -1103,10 +1102,13 @@ stuffPlusServer <- function(id) {
 
       ggplot(plot_data, aes(x = direction, y = pitch_type, fill = pitch_type)) +
         geom_col(color = "black", width = 0.6) +
+        geom_text(aes(label = paste0(round(percent, 1), "%"),
+                      hjust = ifelse(stand == "L", 1.1, -0.1)),
+                  size = 3) +
         geom_vline(xintercept = 0, color = "black", linewidth = 0.5) +
-        annotate("text", x = -50, y = label_y, label = "LHB",
+        annotate("text", x = -50, y = label_y, label = "vs LHH",
                  size = 3, fontface = "bold") +
-        annotate("text", x = 50, y = label_y, label = "RHB",
+        annotate("text", x = 50, y = label_y, label = "vs RHH",
                  size = 3, fontface = "bold") +
         scale_fill_manual(values = pitch_colors, na.value = "grey50") +
         scale_x_continuous(
@@ -1115,7 +1117,6 @@ stuffPlusServer <- function(id) {
         ) +
         labs(
           title = "Pitch Usage by Batter Side",
-          subtitle = "LHB              RHB",
           x = "Usage %",
           y = NULL,
           fill = "Pitch"
@@ -1123,7 +1124,6 @@ stuffPlusServer <- function(id) {
         theme_minimal(base_size = 11) +
         theme(
           plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
-          plot.subtitle = element_text(hjust = 0.5, size = 10),
           panel.grid.major = element_line(color = "grey85", size = 0.5),
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
@@ -1138,31 +1138,17 @@ stuffPlusServer <- function(id) {
     prepare_game_logs_table <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
 
-      date_col <- if ("date" %in% names(df)) df$date else df$gameDate
+      date_name <- intersect(c("date", "Date", "gameDate"), names(df))[1]
+      date_col <- df[[date_name]]
 
       df <- df %>%
         transmute(
-          Season = season,
           Date = as.Date(date_col),
-          GameType = gameType,
-          IsHome = isHome,
-          IsWin = isWin,
-          summary = stat.summary
-        ) %>%
-        mutate(
-          IP = {
-            ip_raw <- as.numeric(str_extract(summary, "^[0-9.]+"))
-            floor(ip_raw) + (ip_raw - floor(ip_raw)) * 10 / 3
-          },
-          ER = as.integer(str_extract(summary, "(?<=, )\d+(?= ER)")),
-          Ks = ifelse(str_detect(summary, "\d+ K"),
-                      as.integer(str_extract(summary, "\d+(?= K)")),
-                      ifelse(str_detect(summary, " K"), 1L, 0L)),
-          BB = ifelse(str_detect(summary, "\d+ BB"),
-                      as.integer(str_extract(summary, "\d+(?= BB)")),
-                      ifelse(str_detect(summary, " BB"), 1L, 0L))
-        ) %>%
-        select(-summary)
+          IP = as.numeric(stat.inningsPitched),
+          Ks = as.integer(stat.strikeOuts),
+          BB = as.integer(stat.baseOnBalls),
+          ER = as.integer(stat.earnedRuns)
+        )
 
       datatable(
         df,
