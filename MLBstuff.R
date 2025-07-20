@@ -10,6 +10,7 @@ library(httr)
 library(jsonlite)
 library(glue)
 library(purrr)
+library(stringr)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -295,9 +296,15 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Game Logs:"),
+                        span(class = "filter-label", "Games:"),
                         div(class = "filter-control",
                             uiOutput(ns("date_filter_ui1"))
+                        )
+                    ),
+                    div(class = "filter-item",
+                        span(class = "filter-label", "Game Logs:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("logs_year_filter_ui1"))
                         )
                     ),
                     div(class = "filter-item",
@@ -333,9 +340,15 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Game Logs:"),
+                        span(class = "filter-label", "Games:"),
                         div(class = "filter-control",
                             uiOutput(ns("date_filter_ui2"))
+                        )
+                    ),
+                    div(class = "filter-item",
+                        span(class = "filter-label", "Game Logs:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("logs_year_filter_ui2"))
                         )
                     ),
                     div(class = "filter-item",
@@ -590,6 +603,22 @@ stuffPlusServer <- function(id) {
         options = list(size = 6)
       )
     })
+
+    output$logs_year_filter_ui1 <- renderUI({
+      req(player1_data())
+      ns <- session$ns
+
+      years <- sort(unique(player1_data()$year))
+
+      pickerInput(
+        inputId = ns("logs_year_filter1"),
+        label = NULL,
+        choices = years,
+        selected = years[1],
+        multiple = FALSE,
+        options = list(size = 6)
+      )
+    })
     
     output$date_filter_ui1 <- renderUI({
       req(player1_data())
@@ -680,6 +709,22 @@ stuffPlusServer <- function(id) {
         options = list(size = 6)
       )
     })
+
+    output$logs_year_filter_ui2 <- renderUI({
+      req(player2_data())
+      ns <- session$ns
+
+      years <- sort(unique(player2_data()$year))
+
+      pickerInput(
+        inputId = ns("logs_year_filter2"),
+        label = NULL,
+        choices = years,
+        selected = years[1],
+        multiple = FALSE,
+        options = list(size = 6)
+      )
+    })
     
     # ---- 8. Data helpers for both players ----------------------------
     get_season_data1 <- reactive({
@@ -728,16 +773,16 @@ stuffPlusServer <- function(id) {
 
     game_logs_data1 <- reactive({
       req(player1_data())
-      req(input$stats_year_filter1)
+      req(input$logs_year_filter1)
       player_id <- unique(player1_data()$pitcher)[1]
-      get_pitcher_game_logs_api(player_id, input$stats_year_filter1)
+      get_pitcher_game_logs_api(player_id, input$logs_year_filter1)
     })
 
     game_logs_data2 <- reactive({
       req(player2_data())
-      req(input$stats_year_filter2)
+      req(input$logs_year_filter2)
       player_id <- unique(player2_data()$pitcher)[1]
-      get_pitcher_game_logs_api(player_id, input$stats_year_filter2)
+      get_pitcher_game_logs_api(player_id, input$logs_year_filter2)
     })
 
     season_stats_data1 <- reactive({
@@ -1088,6 +1133,75 @@ stuffPlusServer <- function(id) {
           plot.background = element_rect(fill = "white", color = NA)
         )
     }
+
+    # ---- 11aa. Format API tables ------------------------------------
+    prepare_game_logs_table <- function(df) {
+      if (is.null(df) || nrow(df) == 0) return(NULL)
+
+      df <- df %>%
+        transmute(
+          Season = season,
+          Date = as.Date(gameDate),
+          GameType = gameType,
+          IsHome = isHome,
+          IsWin = isWin,
+          summary = stat.summary
+        ) %>%
+        mutate(
+          IP = as.numeric(str_extract(summary, "^[0-9.]+")),
+          ER = as.integer(str_extract(summary, "(?<=, )([0-9]+) ER")),
+          Ks = ifelse(str_detect(summary, "[0-9]+ K"),
+                      as.integer(str_extract(summary, "([0-9]+) K")),
+                      ifelse(str_detect(summary, " K"), 1L, 0L)),
+          BB = ifelse(str_detect(summary, "[0-9]+ BB"),
+                      as.integer(str_extract(summary, "([0-9]+) BB")),
+                      ifelse(str_detect(summary, " BB"), 1L, 0L))
+        ) %>%
+        select(-summary)
+
+      datatable(
+        df,
+        options = list(
+          dom = "t",
+          ordering = FALSE,
+          pageLength = 10,
+          columnDefs = list(list(className = "dt-center", targets = "_all"))
+        ),
+        rownames = FALSE,
+        class = "compact stripe hover"
+      ) %>%
+        formatStyle(columns = 1:ncol(df), fontSize = '10px')
+    }
+
+    prepare_season_stats_table <- function(df) {
+      if (is.null(df) || nrow(df) == 0) return(NULL)
+
+      df <- df %>%
+        transmute(
+          Season = season,
+          GameType = gameType,
+          ERA = round(as.numeric(stat.era), 2),
+          FIP = round(((13 * as.numeric(stat.homeRuns)) +
+                        (3 * (as.numeric(stat.baseOnBalls) + as.numeric(stat.hitByPitch))) -
+                        (2 * as.numeric(stat.strikeOuts))) /
+                        as.numeric(stat.inningsPitched) + 3.166, 2),
+          Ks = as.integer(stat.strikeOuts),
+          Walks = as.integer(stat.baseOnBalls)
+        )
+
+      datatable(
+        df,
+        options = list(
+          dom = "t",
+          ordering = FALSE,
+          pageLength = 10,
+          columnDefs = list(list(className = "dt-center", targets = "_all"))
+        ),
+        rownames = FALSE,
+        class = "compact stripe hover"
+      ) %>%
+        formatStyle(columns = 1:ncol(df), fontSize = '10px')
+    }
     
     # ---- 12. Render all tables and plots -----------------------------
     # Player 1 tables
@@ -1105,7 +1219,7 @@ stuffPlusServer <- function(id) {
     output$game_logs_table1 <- renderDT({
       data <- game_logs_data1()
       req(!is.null(data))
-      datatable(data, options = list(pageLength = 10))
+      prepare_game_logs_table(data)
     })
     
     # Player 2 tables
@@ -1123,19 +1237,19 @@ stuffPlusServer <- function(id) {
     output$game_logs_table2 <- renderDT({
       data <- game_logs_data2()
       req(!is.null(data))
-      datatable(data, options = list(pageLength = 10))
+      prepare_game_logs_table(data)
     })
 
     output$season_stats_table1 <- renderDT({
       data <- season_stats_data1()
       req(!is.null(data))
-      datatable(data, options = list(pageLength = 10))
+      prepare_season_stats_table(data)
     })
 
     output$season_stats_table2 <- renderDT({
       data <- season_stats_data2()
       req(!is.null(data))
-      datatable(data, options = list(pageLength = 10))
+      prepare_season_stats_table(data)
     })
     
     # Stuff+ plots
@@ -1187,9 +1301,8 @@ stuffPlusServer <- function(id) {
       data <- game_logs_data1()
       if (is.null(data)) return(NULL)
       ns <- session$ns
-      dates <- unique(data$gameDate)
       tagList(
-        h3("Game Logs", class = "section-title", style = "margin-top: 16px;"),
+        h3(paste("Game Logs:", input$logs_year_filter1), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table1")))
       )
     })
@@ -1226,7 +1339,7 @@ stuffPlusServer <- function(id) {
       if (is.null(data)) return(NULL)
       ns <- session$ns
       tagList(
-        h3("Game Logs", class = "section-title", style = "margin-top: 16px;"),
+        h3(paste("Game Logs:", input$logs_year_filter2), class = "section-title", style = "margin-top: 16px;"),
         div(class = "data-table-container", DTOutput(ns("game_logs_table2")))
       )
     })
