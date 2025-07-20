@@ -6,6 +6,10 @@ library(readr)
 library(DT)
 library(shinyWidgets)
 library(ggplot2)
+library(httr)
+library(jsonlite)
+library(glue)
+library(purrr)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -285,15 +289,21 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Season:"),
+                        span(class = "filter-label", "Season Pitch Metrics:"),
                         div(class = "filter-control",
                             uiOutput(ns("year_filter_ui1"))
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Games:"),
+                        span(class = "filter-label", "Game Logs:"),
                         div(class = "filter-control",
                             uiOutput(ns("date_filter_ui1"))
+                        )
+                    ),
+                    div(class = "filter-item",
+                        span(class = "filter-label", "Season Stats:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("stats_year_filter_ui1"))
                         )
                     )
                 ),
@@ -317,15 +327,21 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Season:"),
+                        span(class = "filter-label", "Season Pitch Metrics:"),
                         div(class = "filter-control",
                             uiOutput(ns("year_filter_ui2"))
                         )
                     ),
                     div(class = "filter-item",
-                        span(class = "filter-label", "Games:"),
+                        span(class = "filter-label", "Game Logs:"),
                         div(class = "filter-control",
                             uiOutput(ns("date_filter_ui2"))
+                        )
+                    ),
+                    div(class = "filter-item",
+                        span(class = "filter-label", "Season Stats:"),
+                        div(class = "filter-control",
+                            uiOutput(ns("stats_year_filter_ui2"))
                         )
                     )
                 ),
@@ -361,7 +377,52 @@ stuffPlusServer <- function(id) {
     swing_code <- c('foul_bunt', 'foul', 'hit_into_play', 'swinging_strike', 'foul_tip',
                     'swinging_strike_blocked', 'missed_bunt', 'bunt_foul_tip')
     whiff_code <- c('swinging_strike', 'foul_tip', 'swinging_strike_blocked')
-    
+
+    # ---- API helper functions --------------------------------------
+    get_pitcher_game_logs_api <- function(player_id, season = 2025) {
+      url <- glue(
+        "https://statsapi.mlb.com/api/v1/people/{player_id}/stats",
+        "?stats=gameLog&group=pitching&season={season}&language=en"
+      )
+      tryCatch({
+        resp <- GET(url)
+        parsed <- fromJSON(content(resp, as = "text", encoding = "UTF-8"), flatten = TRUE)
+        if ("stats" %in% names(parsed) && length(parsed$stats) > 0) {
+          if ("splits" %in% names(parsed$stats) && length(parsed$stats$splits) > 0) {
+            df <- parsed$stats$splits[[1]]
+            df$player_id <- player_id
+            return(df)
+          }
+        }
+        NULL
+      }, error = function(e) {
+        message("Error fetching logs: ", e$message)
+        NULL
+      })
+    }
+
+    get_pitcher_season_stats_api <- function(player_id, season = 2025) {
+      url <- glue(
+        "https://statsapi.mlb.com/api/v1/people/{player_id}/stats",
+        "?stats=season&group=pitching&season={season}&language=en"
+      )
+      tryCatch({
+        resp <- GET(url)
+        parsed <- fromJSON(content(resp, as = "text", encoding = "UTF-8"), flatten = TRUE)
+        if ("stats" %in% names(parsed) && length(parsed$stats) > 0) {
+          if ("splits" %in% names(parsed$stats) && length(parsed$stats$splits) > 0) {
+            df <- parsed$stats$splits[[1]]
+            df$player_id <- player_id
+            return(df)
+          }
+        }
+        NULL
+      }, error = function(e) {
+        message("Error fetching season stats: ", e$message)
+        NULL
+      })
+    }
+
     all_pitches <- bind_rows(
       read_csv(csv_2023, show_col_types = FALSE),
       read_csv(csv_2024, show_col_types = FALSE),
@@ -453,7 +514,8 @@ stuffPlusServer <- function(id) {
                    textOutput(ns("pitch_count1"), inline = TRUE))
           ),
           uiOutput(ns("season_summary_ui1")),
-          uiOutput(ns("game_summary_ui1"))
+          uiOutput(ns("game_summary_ui1")),
+          uiOutput(ns("season_stats_ui1"))
         )
       }
     })
@@ -485,7 +547,8 @@ stuffPlusServer <- function(id) {
                    textOutput(ns("pitch_count2"), inline = TRUE))
           ),
           uiOutput(ns("season_summary_ui2")),
-          uiOutput(ns("game_summary_ui2"))
+          uiOutput(ns("game_summary_ui2")),
+          uiOutput(ns("season_stats_ui2"))
         )
       }
     })
@@ -509,6 +572,22 @@ stuffPlusServer <- function(id) {
           `count-selected-text` = "{0} seasons",
           size = 10
         )
+      )
+    })
+
+    output$stats_year_filter_ui1 <- renderUI({
+      req(player1_data())
+      ns <- session$ns
+
+      years <- sort(unique(player1_data()$year))
+
+      pickerInput(
+        inputId = ns("stats_year_filter1"),
+        label = NULL,
+        choices = years,
+        selected = years[1],
+        multiple = FALSE,
+        options = list(size = 6)
       )
     })
     
@@ -585,6 +664,22 @@ stuffPlusServer <- function(id) {
         )
       )
     })
+
+    output$stats_year_filter_ui2 <- renderUI({
+      req(player2_data())
+      ns <- session$ns
+
+      years <- sort(unique(player2_data()$year))
+
+      pickerInput(
+        inputId = ns("stats_year_filter2"),
+        label = NULL,
+        choices = years,
+        selected = years[1],
+        multiple = FALSE,
+        options = list(size = 6)
+      )
+    })
     
     # ---- 8. Data helpers for both players ----------------------------
     get_season_data1 <- reactive({
@@ -629,6 +724,34 @@ stuffPlusServer <- function(id) {
         data <- NULL
       }
       data
+    })
+
+    game_logs_data1 <- reactive({
+      req(player1_data())
+      req(input$stats_year_filter1)
+      player_id <- unique(player1_data()$pitcher)[1]
+      get_pitcher_game_logs_api(player_id, input$stats_year_filter1)
+    })
+
+    game_logs_data2 <- reactive({
+      req(player2_data())
+      req(input$stats_year_filter2)
+      player_id <- unique(player2_data()$pitcher)[1]
+      get_pitcher_game_logs_api(player_id, input$stats_year_filter2)
+    })
+
+    season_stats_data1 <- reactive({
+      req(player1_data())
+      req(input$stats_year_filter1)
+      player_id <- unique(player1_data()$pitcher)[1]
+      get_pitcher_season_stats_api(player_id, input$stats_year_filter1)
+    })
+
+    season_stats_data2 <- reactive({
+      req(player2_data())
+      req(input$stats_year_filter2)
+      player_id <- unique(player2_data()$pitcher)[1]
+      get_pitcher_season_stats_api(player_id, input$stats_year_filter2)
     })
     
     # ---- 9. Pitch counts ---------------------------------------------
@@ -978,6 +1101,12 @@ stuffPlusServer <- function(id) {
       req(!is.null(data))
       create_compact_table(data)
     })
+
+    output$game_logs_table1 <- renderDT({
+      data <- game_logs_data1()
+      req(!is.null(data))
+      datatable(data, options = list(pageLength = 10))
+    })
     
     # Player 2 tables
     output$season_table2 <- renderDT({
@@ -989,6 +1118,24 @@ stuffPlusServer <- function(id) {
       data <- get_game_data2()
       req(!is.null(data))
       create_compact_table(data)
+    })
+
+    output$game_logs_table2 <- renderDT({
+      data <- game_logs_data2()
+      req(!is.null(data))
+      datatable(data, options = list(pageLength = 10))
+    })
+
+    output$season_stats_table1 <- renderDT({
+      data <- season_stats_data1()
+      req(!is.null(data))
+      datatable(data, options = list(pageLength = 10))
+    })
+
+    output$season_stats_table2 <- renderDT({
+      data <- season_stats_data2()
+      req(!is.null(data))
+      datatable(data, options = list(pageLength = 10))
     })
     
     # Stuff+ plots
@@ -1026,7 +1173,7 @@ stuffPlusServer <- function(id) {
       ns <- session$ns
       years <- sort(unique(data$year))
       tagList(
-        h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
             div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
             div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
@@ -1037,13 +1184,23 @@ stuffPlusServer <- function(id) {
     })
     
     output$game_summary_ui1 <- renderUI({
-      data <- get_game_data1()
+      data <- game_logs_data1()
       if (is.null(data)) return(NULL)
       ns <- session$ns
-      dates <- format(as.Date(input$date_filter1), "%b %d")
+      dates <- unique(data$gameDate)
       tagList(
-        h3(paste("Games:", paste(dates, collapse = ", ")), class = "section-title", style = "margin-top: 16px;"),
-        div(class = "data-table-container", DTOutput(ns("game_table1")))
+        h3("Game Logs", class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("game_logs_table1")))
+      )
+    })
+
+    output$season_stats_ui1 <- renderUI({
+      data <- season_stats_data1()
+      if (is.null(data)) return(NULL)
+      ns <- session$ns
+      tagList(
+        h3(paste("Season Stats:", input$stats_year_filter1), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("season_stats_table1")))
       )
     })
     
@@ -1054,7 +1211,7 @@ stuffPlusServer <- function(id) {
       ns <- session$ns
       years <- sort(unique(data$year))
       tagList(
-        h3(paste("Season:", paste(years, collapse = ", ")), class = "section-title"),
+        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
         div(class = "plot-row",
             div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
             div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
@@ -1065,13 +1222,22 @@ stuffPlusServer <- function(id) {
     })
     
     output$game_summary_ui2 <- renderUI({
-      data <- get_game_data2()
+      data <- game_logs_data2()
       if (is.null(data)) return(NULL)
       ns <- session$ns
-      dates <- format(as.Date(input$date_filter2), "%b %d")
       tagList(
-        h3(paste("Games:", paste(dates, collapse = ", ")), class = "section-title", style = "margin-top: 16px;"),
-        div(class = "data-table-container", DTOutput(ns("game_table2")))
+        h3("Game Logs", class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("game_logs_table2")))
+      )
+    })
+
+    output$season_stats_ui2 <- renderUI({
+      data <- season_stats_data2()
+      if (is.null(data)) return(NULL)
+      ns <- session$ns
+      tagList(
+        h3(paste("Season Stats:", input$stats_year_filter2), class = "section-title", style = "margin-top: 16px;"),
+        div(class = "data-table-container", DTOutput(ns("season_stats_table2")))
       )
     })
     
