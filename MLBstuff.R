@@ -920,7 +920,7 @@ stuffPlusServer <- function(id) {
         group_by(stand) %>%
         mutate(percent = 100 * count / sum(count)) %>%
         ungroup() %>%
-        mutate(direction = ifelse(stand == "L", -percent, percent),
+        mutate(direction = ifelse(stand == "L", -percent, percent))
 
       if (nrow(plot_data) == 0) {
         return(ggplot() +
