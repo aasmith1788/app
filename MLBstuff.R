@@ -1419,6 +1419,15 @@ stuffPlusServer <- function(id) {
         output[[paste0("season_table1_", y)]] <- renderDT({
           create_compact_table(filter(data, year == y))
         })
+        output[[paste0("stuffplus_plot1_", y)]] <- renderPlot({
+          create_stuffplus_plot(filter(data, year == y))
+        })
+        output[[paste0("pitch_breaks_plot1_", y)]] <- renderPlot({
+          create_pitch_breaks_plot(filter(data, year == y))
+        })
+        output[[paste0("pitch_usage_plot1_", y)]] <- renderPlot({
+          create_pitch_usage_plot(filter(data, year == y))
+        })
       })
     })
 
@@ -1429,6 +1438,15 @@ stuffPlusServer <- function(id) {
       lapply(years, function(y) {
         output[[paste0("season_table2_", y)]] <- renderDT({
           create_compact_table(filter(data, year == y))
+        })
+        output[[paste0("stuffplus_plot2_", y)]] <- renderPlot({
+          create_stuffplus_plot(filter(data, year == y))
+        })
+        output[[paste0("pitch_breaks_plot2_", y)]] <- renderPlot({
+          create_pitch_breaks_plot(filter(data, year == y))
+        })
+        output[[paste0("pitch_usage_plot2_", y)]] <- renderPlot({
+          create_pitch_usage_plot(filter(data, year == y))
         })
       })
     })
@@ -1492,25 +1510,34 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      table_ui <- if (!isTRUE(input$season_split1)) {
-        div(class = "data-table-container", DTOutput(ns("season_table1")))
+      if (!isTRUE(input$season_split1)) {
+        tagList(
+          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+          div(class = "plot-row",
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
+              div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
+              div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot1"), height = "300px"))
+          ),
+          div(class = "data-table-container", DTOutput(ns("season_table1")))
+        )
       } else {
-        tagList(lapply(years, function(y) {
-          div(class = "data-table-container",
-              h4(paste("Season", y)),
-              DTOutput(ns(paste0("season_table1_", y)))
-          )
-        }))
+        tagList(
+          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+          lapply(years, function(y) {
+            tagList(
+              div(class = "plot-row",
+                  div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot1_", y)), height = "300px")),
+                  div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot1_", y)), height = "300px")),
+                  div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot1_", y)), height = "300px"))
+              ),
+              div(class = "data-table-container",
+                  h4(paste("Season", y)),
+                  DTOutput(ns(paste0("season_table1_", y)))
+              )
+            )
+          })
+        )
       }
-      tagList(
-        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-        div(class = "plot-row",
-            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
-            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
-            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot1"), height = "300px"))
-        ),
-        table_ui
-      )
     })
     
     output$game_logs_ui1 <- renderUI({
@@ -1565,25 +1592,34 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      table_ui <- if (!isTRUE(input$season_split2)) {
-        div(class = "data-table-container", DTOutput(ns("season_table2")))
+      if (!isTRUE(input$season_split2)) {
+        tagList(
+          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+          div(class = "plot-row",
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
+              div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
+              div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot2"), height = "300px"))
+          ),
+          div(class = "data-table-container", DTOutput(ns("season_table2")))
+        )
       } else {
-        tagList(lapply(years, function(y) {
-          div(class = "data-table-container",
-              h4(paste("Season", y)),
-              DTOutput(ns(paste0("season_table2_", y)))
-          )
-        }))
+        tagList(
+          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+          lapply(years, function(y) {
+            tagList(
+              div(class = "plot-row",
+                  div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot2_", y)), height = "300px")),
+                  div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot2_", y)), height = "300px")),
+                  div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot2_", y)), height = "300px"))
+              ),
+              div(class = "data-table-container",
+                  h4(paste("Season", y)),
+                  DTOutput(ns(paste0("season_table2_", y)))
+              )
+            )
+          })
+        )
       }
-      tagList(
-        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-        div(class = "plot-row",
-            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
-            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
-            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot2"), height = "300px"))
-        ),
-        table_ui
-      )
     })
     
     output$game_logs_ui2 <- renderUI({
