@@ -828,9 +828,9 @@ stuffPlusServer <- function(id) {
       player_id <- unique(player1_data()$pitcher)[1]
       df <- bind_rows(lapply(input$logs_year_filter1,
                              function(y) get_pitcher_game_logs_api(player_id, y)))
-      if (!is.null(df) && !is.null(input$logs_range1) && input$logs_range1 > 0) {
+      if (!is.null(df) && !is.null(input$logs_range1) && as.numeric(input$logs_range1) > 0) {
         date_col <- df[[intersect(c("gameDate", "date", "Date"), names(df))[1]]]
-        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(input$logs_range1)
+        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(as.numeric(input$logs_range1))
       }
       df
     })
@@ -843,9 +843,9 @@ stuffPlusServer <- function(id) {
       player_id <- unique(player2_data()$pitcher)[1]
       df <- bind_rows(lapply(input$logs_year_filter2,
                              function(y) get_pitcher_game_logs_api(player_id, y)))
-      if (!is.null(df) && !is.null(input$logs_range2) && input$logs_range2 > 0) {
+      if (!is.null(df) && !is.null(input$logs_range2) && as.numeric(input$logs_range2) > 0) {
         date_col <- df[[intersect(c("gameDate", "date", "Date"), names(df))[1]]]
-        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(input$logs_range2)
+        df <- df %>% arrange(desc(as.Date(date_col))) %>% head(as.numeric(input$logs_range2))
       }
       df
     })
@@ -1300,7 +1300,8 @@ stuffPlusServer <- function(id) {
         options = list(
           dom = "t",
           ordering = FALSE,
-          pageLength = 10,
+          paging = FALSE,
+          pageLength = nrow(df),
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
