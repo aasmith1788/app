@@ -1139,9 +1139,10 @@ stuffPlusServer <- function(id) {
       zone_bottom <- 1.5
       zone_top <- zone_bottom + zone_height
 
-      ggplot(summary_data, aes(x0 = mean_x, y0 = mean_z, a = sd_x, b = sd_z, colour = pitch_type, fill = pitch_type)) +
-        ggforce::geom_ellipse(alpha = 0.2, colour = NA) +
-        geom_point(aes(x = mean_x, y = mean_z), size = 2) +
+      ggplot(summary_data, aes(x = mean_x, y = mean_z, colour = pitch_type, fill = pitch_type)) +
+        ggforce::geom_ellipse(aes(x0 = mean_x, y0 = mean_z, a = sd_x, b = sd_z, angle = 0),
+                              alpha = 0.2, colour = NA) +
+        geom_point(size = 2) +
         geom_rect(xmin = zone_left, xmax = zone_right,
                   ymin = zone_bottom, ymax = zone_top,
                   colour = "black", fill = NA, linewidth = 0.5) +
