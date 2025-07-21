@@ -252,6 +252,27 @@ stuffPlusUI <- function(id) {
         .compact-filters .selectize-control {
           min-width: 150px;
         }
+
+        .advanced-section summary {
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          margin: 4px 0;
+        }
+
+        .advanced-group {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 8px;
+          margin-bottom: 8px;
+          padding: 4px 0;
+        }
+
+        @media (max-width: 600px) {
+          .advanced-group {
+            grid-template-columns: 1fr;
+          }
+        }
         
         .dataTables_wrapper .dataTables_length,
         .dataTables_wrapper .dataTables_filter,
@@ -300,34 +321,49 @@ stuffPlusUI <- function(id) {
                             uiOutput(ns("year_filter_ui1"))
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "By Season:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("season_split_ui1"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Season Filters"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "By Season:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("season_split_ui1"))
+                                )
+                            )
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Game Pitch Metrics:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("date_filter_ui1"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Game Filters"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Game Pitch Metrics:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("date_filter_ui1"))
+                                )
+                            )
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Game Logs:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("logs_year_filter_ui1"))
-                        )
-                    ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Logs Range:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("logs_range_filter_ui1"))
-                        )
-                    ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Season Stats:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("stats_year_filter_ui1"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Logs & Stats"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Game Logs:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("logs_year_filter_ui1"))
+                                )
+                            ),
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Logs Range:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("logs_range_filter_ui1"))
+                                )
+                            ),
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Season Stats:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("stats_year_filter_ui1"))
+                                )
+                            )
                         )
                     )
                 ),
@@ -356,34 +392,49 @@ stuffPlusUI <- function(id) {
                             uiOutput(ns("year_filter_ui2"))
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "By Season:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("season_split_ui2"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Season Filters"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "By Season:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("season_split_ui2"))
+                                )
+                            )
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Game Pitch Metrics:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("date_filter_ui2"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Game Filters"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Game Pitch Metrics:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("date_filter_ui2"))
+                                )
+                            )
                         )
                     ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Game Logs:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("logs_year_filter_ui2"))
-                        )
-                    ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Logs Range:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("logs_range_filter_ui2"))
-                        )
-                    ),
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Season Stats:"),
-                        div(class = "filter-control",
-                            uiOutput(ns("stats_year_filter_ui2"))
+                    tags$details(class = "advanced-section",
+                        tags$summary("Logs & Stats"),
+                        div(class = "advanced-group",
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Game Logs:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("logs_year_filter_ui2"))
+                                )
+                            ),
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Logs Range:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("logs_range_filter_ui2"))
+                                )
+                            ),
+                            div(class = "filter-item",
+                                span(class = "filter-label", "Season Stats:"),
+                                div(class = "filter-control",
+                                    uiOutput(ns("stats_year_filter_ui2"))
+                                )
+                            )
                         )
                     )
                 ),
