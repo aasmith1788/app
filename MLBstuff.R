@@ -67,7 +67,9 @@ stuffPlusUI <- function(id) {
           align-items: center;
           gap: 16px;
           flex-wrap: wrap;
-          border-bottom: 1px solid #e5e5e5;
+          border: 1px solid #d0d0d0;
+          border-radius: 4px;
+          background: #f5f5f5;
         }
 
         .filter-bar.compact-filters {
@@ -254,30 +256,32 @@ stuffPlusUI <- function(id) {
         }
 
         .advanced-section {
-          margin-bottom: 8px;
+          margin: 0;
         }
 
         .advanced-section summary {
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
-          margin: 4px 0;
+          margin: 0;
           padding: 6px 12px;
-          background: #f5f5f5;
-          border: 1px solid #d0d0d0;
-          border-radius: 4px;
+          background: transparent;
+          border: none;
+          border-left: 1px solid #d0d0d0;
           list-style: none;
         }
 
+        .advanced-section:first-of-type summary {
+          border-left: none;
+        }
+
         .advanced-section[open] summary {
-          border-bottom-left-radius: 0;
-          border-bottom-right-radius: 0;
+          background: #e8e8e8;
         }
 
         .advanced-section[open] {
-          border: 1px solid #d0d0d0;
-          border-radius: 4px;
-          border-top: none;
+          background: #fff;
+          border-top: 1px solid #d0d0d0;
         }
 
         .advanced-group {
