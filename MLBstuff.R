@@ -75,6 +75,25 @@ stuffPlusUI <- function(id) {
         .filter-bar.toolbar {
           gap: 0;
         }
+
+        .player-section {
+          display: flex;
+          align-items: center;
+          border-right: 1px solid #e0e0e0;
+        }
+
+        .player-section .selectize-control {
+          flex: 1;
+          height: 40px;
+        }
+
+        .player-section .selectize-input {
+          background: #f5f5f5 !important;
+          border: none !important;
+          border-radius: 4px 0 0 4px !important;
+          border-right: 1px solid #e0e0e0 !important;
+          box-shadow: none !important;
+        }
         
         .filter-item {
           display: flex;
@@ -105,7 +124,7 @@ stuffPlusUI <- function(id) {
           border: 1px solid #d0d0d0 !important;
           border-radius: 4px !important;
           padding: 6px 12px !important;
-          min-height: 38px !important;
+          min-height: 40px !important;
           font-size: 13px !important;
           background: #fff !important;
         }
@@ -254,12 +273,12 @@ stuffPlusUI <- function(id) {
           min-width: 150px;
         }
 
-        .advanced-section {
+        .dropdown-section {
           position: relative;
           margin: 0;
         }
 
-        .advanced-section summary {
+        .dropdown-toggle {
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
@@ -269,23 +288,23 @@ stuffPlusUI <- function(id) {
           display: flex;
           align-items: center;
           border-right: 1px solid #e0e0e0;
-          list-style: none;
           user-select: none;
         }
 
-        .advanced-section:last-child summary {
+        .dropdown-section:last-child .dropdown-toggle {
           border-right: none;
         }
 
-        .advanced-section summary:hover {
+        .dropdown-toggle:hover {
           background: #e8e8e8;
         }
 
-        .advanced-section[open] > summary {
+        .dropdown-section:hover .dropdown-toggle {
           background: #e8e8e8;
         }
 
-        .advanced-section[open] .advanced-group {
+        .dropdown-panel {
+          display: none;
           position: absolute;
           top: 100%;
           left: 0;
@@ -296,18 +315,33 @@ stuffPlusUI <- function(id) {
           padding: 12px;
           margin-top: 4px;
           min-width: 260px;
+          border: 1px solid #e0e0e0;
         }
 
-        .advanced-group {
+        .dropdown-section:hover .dropdown-panel {
+          display: block;
+        }
+
+        .dropdown-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-          gap: 8px;
-          margin-bottom: 8px;
-          padding: 4px 0;
+          gap: 12px;
+        }
+
+        .dropdown-grid .grid-item {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .dropdown-grid .grid-header {
+          font-size: 12px;
+          font-weight: 600;
+          color: #333;
         }
 
         @media (max-width: 600px) {
-          .advanced-group {
+          .dropdown-grid {
             grid-template-columns: 1fr;
           }
         }
@@ -342,7 +376,7 @@ stuffPlusUI <- function(id) {
             # Player 1 Panel
             div(class = "player-panel",
                 div(class = "filter-bar toolbar",
-                    div(class = "selectize-control",
+                    div(class = "player-section",
                         selectizeInput(ns("player1_search"), label = NULL,
                                        choices = NULL,
                                        options = list(
@@ -350,51 +384,55 @@ stuffPlusUI <- function(id) {
                                          maxOptions = 1000
                                        ))
                     ),
-                    tags$details(class = "advanced-section",
-                                 tags$summary("Season"),
-                                 div(class = "advanced-group",
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Season Pitch Metrics:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("year_filter_ui1"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Season Stats:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("stats_year_filter_ui1"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "By Season:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("season_split_ui1"))
-                                         )
-                                     )
-                                 )
+                    div(class = "dropdown-section",
+                        div(class = "dropdown-toggle", "Season"),
+                        div(class = "dropdown-panel",
+                            div(class = "dropdown-grid",
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Season Pitch Metrics"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("year_filter_ui1"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Season Stats"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("stats_year_filter_ui1"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "By Season"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("season_split_ui1"))
+                                    )
+                                )
+                            )
+                        )
                     ),
-                    tags$details(class = "advanced-section",
-                                 tags$summary("Games"),
-                                 div(class = "advanced-group",
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Game Pitch Metrics:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("date_filter_ui1"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Game Logs:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("logs_year_filter_ui1"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Logs Range:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("logs_range_filter_ui1"))
-                                         )
-                                     )
-                                 )
+                    div(class = "dropdown-section",
+                        div(class = "dropdown-toggle", "Games"),
+                        div(class = "dropdown-panel",
+                            div(class = "dropdown-grid",
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Game Pitch Metrics"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("date_filter_ui1"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Game Logs"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("logs_year_filter_ui1"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Logs Range"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("logs_range_filter_ui1"))
+                                    )
+                                )
+                            )
+                        )
                     )
                 ),
                 div(class = "player-content",
@@ -405,7 +443,7 @@ stuffPlusUI <- function(id) {
             # Player 2 Panel
             div(class = "player-panel",
                 div(class = "filter-bar toolbar",
-                    div(class = "selectize-control",
+                    div(class = "player-section",
                         selectizeInput(ns("player2_search"), label = NULL,
                                        choices = NULL,
                                        options = list(
@@ -413,51 +451,55 @@ stuffPlusUI <- function(id) {
                                          maxOptions = 1000
                                        ))
                     ),
-                    tags$details(class = "advanced-section",
-                                 tags$summary("Season"),
-                                 div(class = "advanced-group",
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Season Pitch Metrics:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("year_filter_ui2"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Season Stats:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("stats_year_filter_ui2"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "By Season:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("season_split_ui2"))
-                                         )
-                                     )
-                                 )
+                    div(class = "dropdown-section",
+                        div(class = "dropdown-toggle", "Season"),
+                        div(class = "dropdown-panel",
+                            div(class = "dropdown-grid",
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Season Pitch Metrics"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("year_filter_ui2"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Season Stats"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("stats_year_filter_ui2"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "By Season"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("season_split_ui2"))
+                                    )
+                                )
+                            )
+                        )
                     ),
-                    tags$details(class = "advanced-section",
-                                 tags$summary("Games"),
-                                 div(class = "advanced-group",
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Game Pitch Metrics:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("date_filter_ui2"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Game Logs:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("logs_year_filter_ui2"))
-                                         )
-                                     ),
-                                     div(class = "filter-item",
-                                         span(class = "filter-label", "Logs Range:"),
-                                         div(class = "filter-control",
-                                             uiOutput(ns("logs_range_filter_ui2"))
-                                         )
-                                     )
-                                 )
+                    div(class = "dropdown-section",
+                        div(class = "dropdown-toggle", "Games"),
+                        div(class = "dropdown-panel",
+                            div(class = "dropdown-grid",
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Game Pitch Metrics"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("date_filter_ui2"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Game Logs"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("logs_year_filter_ui2"))
+                                    )
+                                ),
+                                div(class = "grid-item",
+                                    span(class = "grid-header", "Logs Range"),
+                                    div(class = "filter-control",
+                                        uiOutput(ns("logs_range_filter_ui2"))
+                                    )
+                                )
+                            )
+                        )
                     )
                 ),
                 div(class = "player-content",
