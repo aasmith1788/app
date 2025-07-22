@@ -385,7 +385,7 @@ stuffPlusUI <- function(id) {
                                        ))
                     ),
                     div(class = "dropdown-section",
-                        div(class = "dropdown-toggle", "Season"),
+                        div(class = "dropdown-toggle", "Season ▼"),
                         div(class = "dropdown-panel",
                             div(class = "dropdown-grid",
                                 div(class = "grid-item",
@@ -410,7 +410,7 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "dropdown-section",
-                        div(class = "dropdown-toggle", "Games"),
+                        div(class = "dropdown-toggle", "Games ▼"),
                         div(class = "dropdown-panel",
                             div(class = "dropdown-grid",
                                 div(class = "grid-item",
@@ -452,7 +452,7 @@ stuffPlusUI <- function(id) {
                                        ))
                     ),
                     div(class = "dropdown-section",
-                        div(class = "dropdown-toggle", "Season"),
+                        div(class = "dropdown-toggle", "Season ▼"),
                         div(class = "dropdown-panel",
                             div(class = "dropdown-grid",
                                 div(class = "grid-item",
@@ -477,7 +477,7 @@ stuffPlusUI <- function(id) {
                         )
                     ),
                     div(class = "dropdown-section",
-                        div(class = "dropdown-toggle", "Games"),
+                        div(class = "dropdown-toggle", "Games ▼"),
                         div(class = "dropdown-panel",
                             div(class = "dropdown-grid",
                                 div(class = "grid-item",
