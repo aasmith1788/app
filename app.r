@@ -19,4 +19,3 @@ server <- function(input, output, session) {
 
 # 4) Launch app
 shinyApp(ui, server)
-
