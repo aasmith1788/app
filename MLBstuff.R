@@ -72,25 +72,79 @@ stuffPlusUI <- function(id) {
           gap: 16px;
         }
 
-        .filter-card {
-          background: #fff;
+        .filter-toolbar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
           border: 1px solid var(--border);
-          border-radius: 8px;
-          padding: 16px;
-          display: grid;
-          gap: 16px;
+          background: #fff;
+          border-radius: 6px;
+          padding: 8px 12px;
         }
 
-        .filter-title {
-          font-size: 14px;
-          font-weight: 600;
-          margin-bottom: 8px;
+        .filter-section {
+          position: relative;
+        }
+
+        .filter-section + .filter-section {
+          padding-left: 12px;
+          border-left: 1px solid var(--border);
+        }
+
+        .dropdown-button {
+          display: flex;
+          align-items: center;
+          height: 40px;
+          padding: 0 12px;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          background: #fff;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .dropdown-button:hover {
+          background: #f0f0f0;
+          border-color: var(--primary);
+        }
+
+        details.dropdown-section summary {
+          list-style: none;
+        }
+
+        details.dropdown-section summary::-webkit-details-marker {
+          display: none;
+        }
+
+        details.dropdown-section[open] > summary {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+
+        .dropdown-panel {
+          display: none;
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          background: #fff;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+          padding: 12px;
+          z-index: 10;
+          min-width: 240px;
+        }
+
+        details.dropdown-section[open] .dropdown-panel {
+          display: block;
         }
 
         .filter-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 12px;
         }
 
         .selectize-input,
@@ -272,29 +326,34 @@ stuffPlusUI <- function(id) {
         div(class = "comparison-container",
             # Player 1 Panel
             div(class = "player-panel",
-                div(class = "filter-card",
-                    div(class = "filter-title", "Player 1"),
-                    selectizeInput(ns("player1_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
-                div(class = "filter-card",
-                    div(class = "filter-title", "Season Filters"),
-                    div(class = "filter-grid",
-                        uiOutput(ns("year_filter_ui1")),
-                        uiOutput(ns("stats_year_filter_ui1")),
-                        uiOutput(ns("season_split_ui1"))
-                    )
-                ),
-                div(class = "filter-card",
-                    div(class = "filter-title", "Game Filters"),
-                    div(class = "filter-grid",
-                        uiOutput(ns("date_filter_ui1")),
-                        uiOutput(ns("logs_year_filter_ui1")),
-                        uiOutput(ns("logs_range_filter_ui1"))
+                div(class = "filter-toolbar",
+                    div(class = "filter-section",
+                        selectizeInput(ns("player1_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
+                    ),
+                    tags$details(class = "filter-section dropdown-section",
+                        tags$summary(class = "dropdown-button", "Season"),
+                        div(class = "dropdown-panel",
+                            div(class = "filter-grid",
+                                uiOutput(ns("year_filter_ui1")),
+                                uiOutput(ns("stats_year_filter_ui1")),
+                                uiOutput(ns("season_split_ui1"))
+                            )
+                        )
+                    ),
+                    tags$details(class = "filter-section dropdown-section",
+                        tags$summary(class = "dropdown-button", "Games"),
+                        div(class = "dropdown-panel",
+                            div(class = "filter-grid",
+                                uiOutput(ns("date_filter_ui1")),
+                                uiOutput(ns("logs_year_filter_ui1")),
+                                uiOutput(ns("logs_range_filter_ui1"))
+                            )
+                        )
                     )
                 ),
                 div(class = "player-content",
@@ -304,29 +363,34 @@ stuffPlusUI <- function(id) {
             
             # Player 2 Panel
             div(class = "player-panel",
-                div(class = "filter-card",
-                    div(class = "filter-title", "Player 2"),
-                    selectizeInput(ns("player2_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
-                div(class = "filter-card",
-                    div(class = "filter-title", "Season Filters"),
-                    div(class = "filter-grid",
-                        uiOutput(ns("year_filter_ui2")),
-                        uiOutput(ns("stats_year_filter_ui2")),
-                        uiOutput(ns("season_split_ui2"))
-                    )
-                ),
-                div(class = "filter-card",
-                    div(class = "filter-title", "Game Filters"),
-                    div(class = "filter-grid",
-                        uiOutput(ns("date_filter_ui2")),
-                        uiOutput(ns("logs_year_filter_ui2")),
-                        uiOutput(ns("logs_range_filter_ui2"))
+                div(class = "filter-toolbar",
+                    div(class = "filter-section",
+                        selectizeInput(ns("player2_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
+                    ),
+                    tags$details(class = "filter-section dropdown-section",
+                        tags$summary(class = "dropdown-button", "Season"),
+                        div(class = "dropdown-panel",
+                            div(class = "filter-grid",
+                                uiOutput(ns("year_filter_ui2")),
+                                uiOutput(ns("stats_year_filter_ui2")),
+                                uiOutput(ns("season_split_ui2"))
+                            )
+                        )
+                    ),
+                    tags$details(class = "filter-section dropdown-section",
+                        tags$summary(class = "dropdown-button", "Games"),
+                        div(class = "dropdown-panel",
+                            div(class = "filter-grid",
+                                uiOutput(ns("date_filter_ui2")),
+                                uiOutput(ns("logs_year_filter_ui2")),
+                                uiOutput(ns("logs_range_filter_ui2"))
+                            )
+                        )
                     )
                 ),
                 div(class = "player-content",
