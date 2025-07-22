@@ -613,6 +613,7 @@ stuffPlusServer <- function(id) {
     # Player 1
     updateSelectizeInput(session, "player1_search",
                          choices = sort(unique(all_pitches$formatted_name)),
+                         selected = "",
                          server = TRUE)
     
     observeEvent(input$player1_search, {
@@ -630,6 +631,7 @@ stuffPlusServer <- function(id) {
     # Player 2
     updateSelectizeInput(session, "player2_search",
                          choices = sort(unique(all_pitches$formatted_name)),
+                         selected = "",
                          server = TRUE)
     
     observeEvent(input$player2_search, {
@@ -656,7 +658,7 @@ stuffPlusServer <- function(id) {
           )
         } else {
           div(class = "no-results",
-              h3("Select Player 1"),
+              h3("Select Athlete"),
               p("Enter a pitcher's name in the search box above.")
           )
         }
@@ -690,7 +692,7 @@ stuffPlusServer <- function(id) {
           )
         } else {
           div(class = "no-results",
-              h3("Select Player 2"),
+              h3("Select Athlete"),
               p("Enter a pitcher's name in the search box above.")
           )
         }
@@ -714,10 +716,8 @@ stuffPlusServer <- function(id) {
     
     # ---- 6. Filter UIs for Player 1 ---------------------------------
     output$year_filter_ui1 <- renderUI({
-      req(player1_data())
       ns <- session$ns
-      
-      years <- sort(unique(player1_data()$year))
+      years <- if (!is.null(player1_data())) sort(unique(player1_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("year_filter1"),
@@ -740,10 +740,8 @@ stuffPlusServer <- function(id) {
     })
     
     output$stats_year_filter_ui1 <- renderUI({
-      req(player1_data())
       ns <- session$ns
-      
-      years <- sort(unique(player1_data()$year))
+      years <- if (!is.null(player1_data())) sort(unique(player1_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("stats_year_filter1"),
@@ -759,10 +757,8 @@ stuffPlusServer <- function(id) {
     })
     
     output$logs_year_filter_ui1 <- renderUI({
-      req(player1_data())
       ns <- session$ns
-      
-      years <- sort(unique(player1_data()$year))
+      years <- if (!is.null(player1_data())) sort(unique(player1_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("logs_year_filter1"),
@@ -787,18 +783,21 @@ stuffPlusServer <- function(id) {
     })
     
     output$date_filter_ui1 <- renderUI({
-      req(player1_data())
       ns <- session$ns
-      
-      dates <- player1_data() %>%
-        select(game_date, game_date_formatted) %>%
-        distinct() %>%
-        arrange(desc(game_date))
+      if (!is.null(player1_data())) {
+        dates <- player1_data() %>%
+          select(game_date, game_date_formatted) %>%
+          distinct() %>%
+          arrange(desc(game_date))
+        choices <- setNames(dates$game_date, dates$game_date_formatted)
+      } else {
+        choices <- NULL
+      }
       
       pickerInput(
         inputId = ns("date_filter1"),
         label = NULL,
-        choices = setNames(dates$game_date, dates$game_date_formatted),
+        choices = choices,
         selected = NULL,
         multiple = TRUE,
         options = list(
@@ -807,17 +806,15 @@ stuffPlusServer <- function(id) {
           `count-selected-text` = "{0} games",
           size = 10,
           `live-search` = TRUE,
-          `none-selected-text` = "Select games"
+          `none-selected-text` = if (is.null(player1_data())) "Select player first" else "Select games"
         )
       )
     })
     
     # ---- 7. Filter UIs for Player 2 ---------------------------------
     output$year_filter_ui2 <- renderUI({
-      req(player2_data())
       ns <- session$ns
-      
-      years <- sort(unique(player2_data()$year))
+      years <- if (!is.null(player2_data())) sort(unique(player2_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("year_filter2"),
@@ -835,18 +832,21 @@ stuffPlusServer <- function(id) {
     })
     
     output$date_filter_ui2 <- renderUI({
-      req(player2_data())
       ns <- session$ns
-      
-      dates <- player2_data() %>%
-        select(game_date, game_date_formatted) %>%
-        distinct() %>%
-        arrange(desc(game_date))
+      if (!is.null(player2_data())) {
+        dates <- player2_data() %>%
+          select(game_date, game_date_formatted) %>%
+          distinct() %>%
+          arrange(desc(game_date))
+        choices <- setNames(dates$game_date, dates$game_date_formatted)
+      } else {
+        choices <- NULL
+      }
       
       pickerInput(
         inputId = ns("date_filter2"),
         label = NULL,
-        choices = setNames(dates$game_date, dates$game_date_formatted),
+        choices = choices,
         selected = NULL,
         multiple = TRUE,
         options = list(
@@ -855,7 +855,7 @@ stuffPlusServer <- function(id) {
           `count-selected-text` = "{0} games",
           size = 10,
           `live-search` = TRUE,
-          `none-selected-text` = "Select games"
+          `none-selected-text` = if (is.null(player2_data())) "Select player first" else "Select games"
         )
       )
     })
@@ -866,10 +866,8 @@ stuffPlusServer <- function(id) {
     })
     
     output$stats_year_filter_ui2 <- renderUI({
-      req(player2_data())
       ns <- session$ns
-      
-      years <- sort(unique(player2_data()$year))
+      years <- if (!is.null(player2_data())) sort(unique(player2_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("stats_year_filter2"),
@@ -885,10 +883,8 @@ stuffPlusServer <- function(id) {
     })
     
     output$logs_year_filter_ui2 <- renderUI({
-      req(player2_data())
       ns <- session$ns
-      
-      years <- sort(unique(player2_data()$year))
+      years <- if (!is.null(player2_data())) sort(unique(player2_data()$year)) else NULL
       
       pickerInput(
         inputId = ns("logs_year_filter2"),
