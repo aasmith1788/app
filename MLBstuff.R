@@ -62,19 +62,18 @@ stuffPlusUI <- function(id) {
         }
         
         .filter-bar {
-          padding: 16px 20px;
           display: flex;
           align-items: center;
-          gap: 16px;
-          flex-wrap: wrap;
+          gap: 8px;
+          padding: 0 8px;
+          height: 40px;
           border: 1px solid #d0d0d0;
           border-radius: 4px;
           background: #f5f5f5;
         }
 
-        .filter-bar.compact-filters {
-          padding: 8px 12px;
-          gap: 8px;
+        .filter-bar.toolbar {
+          gap: 0;
         }
         
         .filter-item {
@@ -106,7 +105,7 @@ stuffPlusUI <- function(id) {
           border: 1px solid #d0d0d0 !important;
           border-radius: 4px !important;
           padding: 6px 12px !important;
-          min-height: 34px !important;
+          min-height: 38px !important;
           font-size: 13px !important;
           background: #fff !important;
         }
@@ -256,32 +255,47 @@ stuffPlusUI <- function(id) {
         }
 
         .advanced-section {
+          position: relative;
           margin: 0;
         }
 
         .advanced-section summary {
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           margin: 0;
-          padding: 6px 12px;
-          background: transparent;
-          border: none;
-          border-left: 1px solid #d0d0d0;
+          padding: 0 12px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          border-right: 1px solid #e0e0e0;
           list-style: none;
+          user-select: none;
         }
 
-        .advanced-section:first-of-type summary {
-          border-left: none;
+        .advanced-section:last-child summary {
+          border-right: none;
         }
 
-        .advanced-section[open] summary {
+        .advanced-section summary:hover {
           background: #e8e8e8;
         }
 
-        .advanced-section[open] {
+        .advanced-section[open] > summary {
+          background: #e8e8e8;
+        }
+
+        .advanced-section[open] .advanced-group {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          z-index: 100;
           background: #fff;
-          border-top: 1px solid #d0d0d0;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-radius: 4px;
+          padding: 12px;
+          margin-top: 4px;
+          min-width: 260px;
         }
 
         .advanced-group {
@@ -327,17 +341,14 @@ stuffPlusUI <- function(id) {
         div(class = "comparison-container",
             # Player 1 Panel
             div(class = "player-panel",
-                div(class = "filter-bar compact-filters",
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Player 1:"),
-                        div(class = "selectize-control",
-                            selectizeInput(ns("player1_search"), label = NULL,
-                                           choices = NULL,
-                                           options = list(
-                                             placeholder = "Search pitcher...",
-                                             maxOptions = 1000
-                                           ))
-                        )
+                div(class = "filter-bar toolbar",
+                    div(class = "selectize-control",
+                        selectizeInput(ns("player1_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
                     ),
                     tags$details(class = "advanced-section",
                                  tags$summary("Season"),
@@ -393,17 +404,14 @@ stuffPlusUI <- function(id) {
             
             # Player 2 Panel
             div(class = "player-panel",
-                div(class = "filter-bar compact-filters",
-                    div(class = "filter-item",
-                        span(class = "filter-label", "Player 2:"),
-                        div(class = "selectize-control",
-                            selectizeInput(ns("player2_search"), label = NULL,
-                                           choices = NULL,
-                                           options = list(
-                                             placeholder = "Search pitcher...",
-                                             maxOptions = 1000
-                                           ))
-                        )
+                div(class = "filter-bar toolbar",
+                    div(class = "selectize-control",
+                        selectizeInput(ns("player2_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
                     ),
                     tags$details(class = "advanced-section",
                                  tags$summary("Season"),
