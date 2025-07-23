@@ -589,11 +589,15 @@ stuffPlusServer <- function(id) {
       {
         split_labels <- lapply(years, function(y) {
           htmltools::HTML(paste0(
-            '<div style="display:flex;justify-content:space-between;align-items:center;">',
-            y,
+            '<div style="display:flex;justify-content:space-between;align-items:center;width:100%;">',
+            '<span>', y, '</span>',
+            '<label style="margin-left:6px;display:flex;align-items:center;font-size:11px;">',
             '<input type="checkbox" class="season-split-checkbox1" data-year="',
             y,
-            '" style="margin-left:6px;"/></div>'
+            '"/>',
+            '<span style="margin-left:3px;">Ind</span>',
+            '</label>',
+            '</div>'
           ))
         })
 
@@ -708,11 +712,15 @@ stuffPlusServer <- function(id) {
       {
         split_labels <- lapply(years, function(y) {
           htmltools::HTML(paste0(
-            '<div style="display:flex;justify-content:space-between;align-items:center;">',
-            y,
+            '<div style="display:flex;justify-content:space-between;align-items:center;width:100%;">',
+            '<span>', y, '</span>',
+            '<label style="margin-left:6px;display:flex;align-items:center;font-size:11px;">',
             '<input type="checkbox" class="season-split-checkbox2" data-year="',
             y,
-            '" style="margin-left:6px;"/></div>'
+            '"/>',
+            '<span style="margin-left:3px;">Ind</span>',
+            '</label>',
+            '</div>'
           ))
         })
 
