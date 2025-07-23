@@ -95,6 +95,16 @@ stuffPlusUI <- function(id) {
           gap: 12px;
         }
 
+        .year-filter-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .selectize-dropdown {
+          z-index: 9999 !important;
+        }
+
         .filter-item {
           display: flex;
           flex-direction: column;
@@ -278,10 +288,6 @@ stuffPlusUI <- function(id) {
                                   span(class = "filter-label", "Season Pitch Metrics:"),
                                   uiOutput(ns("year_filter_ui1"))
                               ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "By Season:"),
-                                  uiOutput(ns("season_split_ui1"))
-                              )
                           )
                       ),
                       div(class = "filter-section",
@@ -334,10 +340,6 @@ stuffPlusUI <- function(id) {
                                   span(class = "filter-label", "Season Pitch Metrics:"),
                                   uiOutput(ns("year_filter_ui2"))
                               ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "By Season:"),
-                                  uiOutput(ns("season_split_ui2"))
-                              )
                           )
                       ),
                       div(class = "filter-section",
@@ -581,27 +583,25 @@ stuffPlusServer <- function(id) {
     output$year_filter_ui1 <- renderUI({
       req(player1_data())
       ns <- session$ns
-      
+
       years <- sort(unique(player1_data()$year))
-      
-      pickerInput(
-        inputId = ns("year_filter1"),
-        label = NULL,
-        choices = years,
-        selected = NULL,
-        multiple = TRUE,
-        options = list(
-          `actions-box` = TRUE,
-          `selected-text-format` = "count > 2",
-          `count-selected-text` = "{0} seasons",
-          size = 10
-        )
+
+      div(class = "year-filter-group",
+          pickerInput(
+            inputId = ns("year_filter1"),
+            label = NULL,
+            choices = years,
+            selected = NULL,
+            multiple = TRUE,
+            options = list(
+              `actions-box` = TRUE,
+              `selected-text-format` = "count > 2",
+              `count-selected-text` = "{0} seasons",
+              size = 10
+            )
+          ),
+          checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
       )
-    })
-    
-    output$season_split_ui1 <- renderUI({
-      ns <- session$ns
-      checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
     })
     
     output$stats_year_filter_ui1 <- renderUI({
@@ -681,21 +681,24 @@ stuffPlusServer <- function(id) {
     output$year_filter_ui2 <- renderUI({
       req(player2_data())
       ns <- session$ns
-      
+
       years <- sort(unique(player2_data()$year))
-      
-      pickerInput(
-        inputId = ns("year_filter2"),
-        label = NULL,
-        choices = years,
-        selected = NULL,
-        multiple = TRUE,
-        options = list(
-          `actions-box` = TRUE,
-          `selected-text-format` = "count > 2",
-          `count-selected-text` = "{0} seasons",
-          size = 10
-        )
+
+      div(class = "year-filter-group",
+          pickerInput(
+            inputId = ns("year_filter2"),
+            label = NULL,
+            choices = years,
+            selected = NULL,
+            multiple = TRUE,
+            options = list(
+              `actions-box` = TRUE,
+              `selected-text-format` = "count > 2",
+              `count-selected-text` = "{0} seasons",
+              size = 10
+            )
+          ),
+          checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
       )
     })
     
@@ -725,10 +728,6 @@ stuffPlusServer <- function(id) {
       )
     })
     
-    output$season_split_ui2 <- renderUI({
-      ns <- session$ns
-      checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
-    })
     
     output$stats_year_filter_ui2 <- renderUI({
       req(player2_data())
