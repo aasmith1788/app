@@ -613,10 +613,12 @@ stuffPlusServer <- function(id) {
             choicesOpt = list(content = split_labels)
           ),
           tags$script(HTML(paste0(
-            "$(document).on('change', '.season-split-checkbox1', function(e){",
+            "$(document).on('click', '.season-split-checkbox1', function(e){",
+            "  e.stopPropagation();",
+            "});",
+            "$(document).on('change', '.season-split-checkbox1', function(){",
             "  var vals = $('.season-split-checkbox1:checked').map(function(){return $(this).data('year');}).get();",
             "  Shiny.setInputValue('", ns("season_split1"), "', vals, {priority: 'event'});",
-            "  e.stopPropagation();",
             "});"
           )))
         )
@@ -730,10 +732,12 @@ stuffPlusServer <- function(id) {
             choicesOpt = list(content = split_labels)
           ),
           tags$script(HTML(paste0(
-            "$(document).on('change', '.season-split-checkbox2', function(e){",
+            "$(document).on('click', '.season-split-checkbox2', function(e){",
+            "  e.stopPropagation();",
+            "});",
+            "$(document).on('change', '.season-split-checkbox2', function(){",
             "  var vals = $('.season-split-checkbox2:checked').map(function(){return $(this).data('year');}).get();",
             "  Shiny.setInputValue('", ns("season_split2"), "', vals, {priority: 'event'});",
-            "  e.stopPropagation();",
             "});"
           )))
         )
