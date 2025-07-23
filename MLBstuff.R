@@ -586,7 +586,18 @@ stuffPlusServer <- function(id) {
 
       years <- sort(unique(player1_data()$year))
 
-      div(class = "year-filter-group",
+      {
+        split_labels <- lapply(years, function(y) {
+          htmltools::HTML(paste0(
+            '<div style="display:flex;justify-content:space-between;align-items:center;">',
+            y,
+            '<input type="checkbox" class="season-split-checkbox1" data-year="',
+            y,
+            '" style="margin-left:6px;"/></div>'
+          ))
+        })
+
+        tagList(
           pickerInput(
             inputId = ns("year_filter1"),
             label = NULL,
@@ -598,10 +609,18 @@ stuffPlusServer <- function(id) {
               `selected-text-format` = "count > 2",
               `count-selected-text` = "{0} seasons",
               size = 10
-            )
+            ),
+            choicesOpt = list(content = split_labels)
           ),
-          checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
-      )
+          tags$script(HTML(paste0(
+            "$(document).on('change', '.season-split-checkbox1', function(e){",
+            "  var vals = $('.season-split-checkbox1:checked').map(function(){return $(this).data('year');}).get();",
+            "  Shiny.setInputValue('", ns("season_split1"), "', vals, {priority: 'event'});",
+            "  e.stopPropagation();",
+            "});"
+          )))
+        )
+      }
     })
     
     output$stats_year_filter_ui1 <- renderUI({
@@ -684,7 +703,18 @@ stuffPlusServer <- function(id) {
 
       years <- sort(unique(player2_data()$year))
 
-      div(class = "year-filter-group",
+      {
+        split_labels <- lapply(years, function(y) {
+          htmltools::HTML(paste0(
+            '<div style="display:flex;justify-content:space-between;align-items:center;">',
+            y,
+            '<input type="checkbox" class="season-split-checkbox2" data-year="',
+            y,
+            '" style="margin-left:6px;"/></div>'
+          ))
+        })
+
+        tagList(
           pickerInput(
             inputId = ns("year_filter2"),
             label = NULL,
@@ -696,10 +726,18 @@ stuffPlusServer <- function(id) {
               `selected-text-format` = "count > 2",
               `count-selected-text` = "{0} seasons",
               size = 10
-            )
+            ),
+            choicesOpt = list(content = split_labels)
           ),
-          checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
-      )
+          tags$script(HTML(paste0(
+            "$(document).on('change', '.season-split-checkbox2', function(e){",
+            "  var vals = $('.season-split-checkbox2:checked').map(function(){return $(this).data('year');}).get();",
+            "  Shiny.setInputValue('", ns("season_split2"), "', vals, {priority: 'event'});",
+            "  e.stopPropagation();",
+            "});"
+          )))
+        )
+      }
     })
     
     output$date_filter_ui2 <- renderUI({
@@ -1391,9 +1429,9 @@ stuffPlusServer <- function(id) {
     })
     
     observe({
-      req(isTRUE(input$season_split1))
+      req(length(input$season_split1) > 0)
       data <- get_season_data1()
-      years <- sort(unique(data$year))
+      years <- intersect(sort(unique(data$year)), input$season_split1)
       lapply(years, function(y) {
         output[[paste0("season_table1_", y)]] <- renderDT({
           create_compact_table(filter(data, year == y))
@@ -1409,11 +1447,11 @@ stuffPlusServer <- function(id) {
         })
       })
     })
-    
+
     observe({
-      req(isTRUE(input$season_split2))
+      req(length(input$season_split2) > 0)
       data <- get_season_data2()
-      years <- sort(unique(data$year))
+      years <- intersect(sort(unique(data$year)), input$season_split2)
       lapply(years, function(y) {
         output[[paste0("season_table2_", y)]] <- renderDT({
           create_compact_table(filter(data, year == y))
@@ -1489,34 +1527,30 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      if (!isTRUE(input$season_split1)) {
-        tagList(
-          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-          div(class = "plot-row",
-              div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
-              div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
-              div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot1"), height = "300px"))
-          ),
-          div(class = "data-table-container", DTOutput(ns("season_table1")))
-        )
-      } else {
-        tagList(
-          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-          lapply(years, function(y) {
-            tagList(
-              h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
-              div(class = "plot-row",
-                  div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot1_", y)), height = "300px")),
-                  div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot1_", y)), height = "300px")),
-                  div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot1_", y)), height = "300px"))
-              ),
-              div(class = "data-table-container",
-                  DTOutput(ns(paste0("season_table1_", y)))
-              )
+      selected_splits <- intersect(years, input$season_split1)
+
+      tagList(
+        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot1"), height = "300px")),
+            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot1"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot1"), height = "300px"))
+        ),
+        div(class = "data-table-container", DTOutput(ns("season_table1"))),
+        lapply(selected_splits, function(y) {
+          tagList(
+            h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
+            div(class = "plot-row",
+                div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot1_", y)), height = "300px")),
+                div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot1_", y)), height = "300px")),
+                div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot1_", y)), height = "300px"))
+            ),
+            div(class = "data-table-container",
+                DTOutput(ns(paste0("season_table1_", y)))
             )
-          })
-        )
-      }
+          )
+        })
+      )
     })
     
     output$game_logs_ui1 <- renderUI({
@@ -1571,34 +1605,30 @@ stuffPlusServer <- function(id) {
       if (is.null(data) || nrow(data) == 0) return(NULL)
       ns <- session$ns
       years <- sort(unique(data$year))
-      if (!isTRUE(input$season_split2)) {
-        tagList(
-          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-          div(class = "plot-row",
-              div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
-              div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
-              div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot2"), height = "300px"))
-          ),
-          div(class = "data-table-container", DTOutput(ns("season_table2")))
-        )
-      } else {
-        tagList(
-          h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
-          lapply(years, function(y) {
-            tagList(
-              h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
-              div(class = "plot-row",
-                  div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot2_", y)), height = "300px")),
-                  div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot2_", y)), height = "300px")),
-                  div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot2_", y)), height = "300px"))
-              ),
-              div(class = "data-table-container",
-                  DTOutput(ns(paste0("season_table2_", y)))
-              )
+      selected_splits <- intersect(years, input$season_split2)
+
+      tagList(
+        h3(paste("Season Pitch Metrics:", paste(years, collapse = ", ")), class = "section-title"),
+        div(class = "plot-row",
+            div(class = "stuffplus-plot-wrapper", plotOutput(ns("stuffplus_plot2"), height = "300px")),
+            div(class = "breaks-plot-wrapper", plotOutput(ns("pitch_breaks_plot2"), height = "300px")),
+            div(class = "usage-plot-wrapper", plotOutput(ns("pitch_usage_plot2"), height = "300px"))
+        ),
+        div(class = "data-table-container", DTOutput(ns("season_table2"))),
+        lapply(selected_splits, function(y) {
+          tagList(
+            h4(paste("Season", y), class = "section-title", style = "margin-top: 16px;"),
+            div(class = "plot-row",
+                div(class = "stuffplus-plot-wrapper", plotOutput(ns(paste0("stuffplus_plot2_", y)), height = "300px")),
+                div(class = "breaks-plot-wrapper", plotOutput(ns(paste0("pitch_breaks_plot2_", y)), height = "300px")),
+                div(class = "usage-plot-wrapper", plotOutput(ns(paste0("pitch_usage_plot2_", y)), height = "300px"))
+            ),
+            div(class = "data-table-container",
+                DTOutput(ns(paste0("season_table2_", y)))
             )
-          })
-        )
-      }
+          )
+        })
+      )
     })
     
     output$game_logs_ui2 <- renderUI({
