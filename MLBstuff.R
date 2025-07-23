@@ -322,6 +322,14 @@ stuffPlusUI <- function(id) {
           display: block;
         }
 
+        .dropdown-section.open .dropdown-panel {
+          display: block;
+        }
+
+        .dropdown-section.open .dropdown-toggle {
+          background: #e8e8e8;
+        }
+
         .dropdown-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -362,7 +370,8 @@ stuffPlusUI <- function(id) {
             margin-bottom: 20px;
           }
         }
-      "))
+      ")),
+      tags$script(HTML("$(function(){\n  $(document).on('click','.dropdown-toggle',function(e){\n    var section=$(this).closest('.dropdown-section');\n    $('.dropdown-section').not(section).removeClass('open');\n    section.toggleClass('open');\n    e.stopPropagation();\n  });\n  $(document).on('click',function(){\n    $('.dropdown-section').removeClass('open');\n  });\n});"))
     ),
     
     div(class = "main-container",
@@ -617,9 +626,9 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$player1_search, {
-      req(input$player1_search)
+      req(nzchar(input$player1_search))
       data <- all_pitches %>%
-        filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+        filter(formatted_name == input$player1_search)
       
       if (nrow(data) > 0) {
         player1_data(data)
@@ -635,9 +644,9 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$player2_search, {
-      req(input$player2_search)
+      req(nzchar(input$player2_search))
       data <- all_pitches %>%
-        filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+        filter(formatted_name == input$player2_search)
       
       if (nrow(data) > 0) {
         player2_data(data)
