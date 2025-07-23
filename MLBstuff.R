@@ -249,7 +249,7 @@ stuffPlusUI <- function(id) {
             margin-bottom: 20px;
           }
         }
-        ))
+        "))
     ),
     
     div(class = "main-container",
