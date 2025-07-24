@@ -49,14 +49,19 @@ stuffPlusUI <- function(id) {
           margin: 0 0 16px 0;
         }
 
-        .player-header {
-          background: rgba(255,255,255,0.5);
-          backdrop-filter: blur(8px);
-          padding: 16px;
-          border-radius: 8px 8px 0 0;
+        .player-panel {
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          overflow: visible;
           display: flex;
-          justify-content: center;
-          margin-bottom: 16px;
+          align-items: flex-start;
+          gap: 20px;
+        }
+
+        .filters {
+          width: 260px;
+          padding: 16px;
         }
 
         .comparison-container {
@@ -75,18 +80,7 @@ stuffPlusUI <- function(id) {
           flex: 1;
         }
 
-        .player-panel {
-          background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          overflow: visible;
-          display: flex;
-          flex-direction: column;
-        }
 
-        .filters {
-          padding: 16px;
-        }
 
         .filter-section {
           margin-bottom: 20px;
@@ -270,6 +264,12 @@ stuffPlusUI <- function(id) {
           .player-panel:first-child {
             margin-bottom: 20px;
           }
+          .player-panel {
+            flex-direction: column;
+          }
+          .filters {
+            width: 100%;
+          }
         }
         "))
     ),
@@ -295,15 +295,16 @@ stuffPlusUI <- function(id) {
         div(class = "comparison-container",
             # Player 1 Panel
             div(class = "player-panel",
-                div(class = "player-header",
-                    selectizeInput(ns("player1_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
                 div(class = "filters",
+                    div(class = "filter-section",
+                        span("Player Name", class = "filter-title"),
+                        selectizeInput(ns("player1_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
+                    ),
                     div(class = "filter-section",
                         span("Season Analysis", class = "filter-title"),
                         div(class = "filter-grid",
@@ -349,15 +350,16 @@ stuffPlusUI <- function(id) {
             conditionalPanel(
                 condition = sprintf("input['%s'] === 'two'", ns('player_mode')),
                 div(class = "player-panel",
-                div(class = "player-header",
-                    selectizeInput(ns("player2_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
                 div(class = "filters",
+                    div(class = "filter-section",
+                        span("Player Name", class = "filter-title"),
+                        selectizeInput(ns("player2_search"), label = NULL,
+                                       choices = NULL,
+                                       options = list(
+                                         placeholder = "Search pitcher...",
+                                         maxOptions = 1000
+                                       ))
+                    ),
                     div(class = "filter-section",
                         span("Season Analysis", class = "filter-title"),
                         div(class = "filter-grid",
