@@ -1,4 +1,3 @@
-
 # modules/mod_stuffplus.R - Two Player Comparison Version (FIXED)
 # =====================================================================
 library(shiny)
@@ -68,7 +67,7 @@ stuffPlusUI <- function(id) {
           background: #fff;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          overflow: hidden;
+          overflow: visible;
           display: flex;
           flex-direction: column;
         }
@@ -601,7 +600,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split1"), label = "Summary per season", value = FALSE)
       )
     })
     
@@ -699,7 +698,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split2"), label = "Summary per season", value = FALSE)
       )
     })
     
