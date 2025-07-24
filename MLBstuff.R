@@ -39,6 +39,8 @@ stuffPlusUI <- function(id) {
           padding: 24px;
           margin-bottom: 20px;
           border-radius: 8px;
+          display: flex;
+          flex-direction: column;
         }
 
         .page-title {
@@ -59,8 +61,18 @@ stuffPlusUI <- function(id) {
 
         .comparison-container {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
           gap: 20px;
+        }
+
+        .mode-toggle {
+          display: flex;
+          gap: 10px;
+          height: 100%;
+        }
+
+        .mode-toggle .btn {
+          flex: 1;
         }
 
         .player-panel {
@@ -192,7 +204,7 @@ stuffPlusUI <- function(id) {
         }
 
         table.dataTable {
-          font-size: 11px;
+          font-size: 9px;
           border-collapse: collapse;
           width: 100%;
         }
@@ -202,19 +214,19 @@ stuffPlusUI <- function(id) {
           border-bottom: 2px solid #e5e5e5;
           font-weight: 600;
           color: #666;
-          padding: 6px 2px;
+          padding: 4px 2px;
           text-align: center;
-          font-size: 10px;
+          font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.3px;
         }
 
         table.dataTable tbody td {
           border-bottom: 1px solid #f0f0f0;
-          padding: 4px 2px;
+          padding: 3px 1px;
           text-align: center;
           color: #1a1a1a;
-          font-size: 11px;
+          font-size: 9px;
           white-space: nowrap;
         }
 
@@ -265,7 +277,18 @@ stuffPlusUI <- function(id) {
     div(class = "main-container",
         # Header
         div(class = "header-section",
-            h1("MLB Stuff Plus Analytics - Player Comparison", class = "page-title")
+            h1("MLB Stuff Plus Analytics - Player Comparison", class = "page-title"),
+            div(class = "mode-toggle",
+                radioGroupButtons(
+                  inputId = ns("player_mode"),
+                  label = NULL,
+                  choices = c("Single Athlete" = "single", "Two Athletes" = "two"),
+                  selected = "two",
+                  justified = TRUE,
+                  individual = TRUE,
+                  status = "primary"
+                )
+            )
         ),
         
         # Two-player comparison layout
@@ -323,55 +346,58 @@ stuffPlusUI <- function(id) {
             ),
             
             # Player 2 Panel
-            div(class = "player-panel",
-                div(class = "player-header",
-                    selectizeInput(ns("player2_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
-                div(class = "filters",
-                    div(class = "filter-section",
-                        span("Season Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Pitch Metrics:"),
-                                uiOutput(ns("year_filter_ui2"))
-                            ),
-                        )
-                    ),
-                    div(class = "filter-section",
-                        span("Game Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Pitch Metrics:"),
-                                uiOutput(ns("date_filter_ui2"))
-                            )
-                        )
-                    ),
-                    div(class = "filter-section",
-                        span("Performance Logs", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Logs:"),
-                                uiOutput(ns("logs_year_filter_ui2"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Logs Range:"),
-                                uiOutput(ns("logs_range_filter_ui2"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Stats:"),
-                                uiOutput(ns("stats_year_filter_ui2"))
-                            )
-                        )
-                    )
-                ),
-                div(class = "player-content",
-                    uiOutput(ns("player2_content"))
-                )
+            conditionalPanel(
+              condition = sprintf("input['%s'] === 'two'", ns('player_mode')),
+              div(class = "player-panel",
+                  div(class = "player-header",
+                      selectizeInput(ns("player2_search"), label = NULL,
+                                     choices = NULL,
+                                     options = list(
+                                       placeholder = "Search pitcher...",
+                                       maxOptions = 1000
+                                     ))
+                  ),
+                  div(class = "filters",
+                      div(class = "filter-section",
+                          span("Season Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Pitch Metrics:"),
+                                  uiOutput(ns("year_filter_ui2"))
+                              ),
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Game Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Pitch Metrics:"),
+                                  uiOutput(ns("date_filter_ui2"))
+                              )
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Performance Logs", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Logs:"),
+                                  uiOutput(ns("logs_year_filter_ui2"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Logs Range:"),
+                                  uiOutput(ns("logs_range_filter_ui2"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Stats:"),
+                                  uiOutput(ns("stats_year_filter_ui2"))
+                              )
+                          )
+                      )
+                  ),
+                  div(class = "player-content",
+                      uiOutput(ns("player2_content"))
+                  )
+              )
             )
         )
     )
@@ -954,10 +980,10 @@ stuffPlusServer <- function(id) {
           ordering = FALSE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
-            list(width = "25px", targets = 0),  # Type
-            list(width = "35px", targets = 1),  # Count
-            list(width = "28px", targets = c(2:8)),  # Stats
-            list(width = "35px", targets = c(9:12))  # Percentages
+            list(width = "20px", targets = 0),  # Type
+            list(width = "33px", targets = 1),  # Count
+            list(width = "24px", targets = c(2:8)),  # Stats
+            list(width = "28px", targets = c(9:12))  # Percentages
           )
         ),
         rownames = FALSE,
@@ -965,7 +991,7 @@ stuffPlusServer <- function(id) {
       ) %>%
         formatStyle(
           columns = 1:ncol(summary_data),
-          fontSize = '10px'
+          fontSize = '9px'
         ) %>%
         formatStyle(
           "Type",
