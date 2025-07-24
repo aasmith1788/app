@@ -68,7 +68,7 @@ stuffPlusUI <- function(id) {
           background: #fff;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          overflow: hidden;
+          overflow: visible;
           display: flex;
           flex-direction: column;
         }
