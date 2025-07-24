@@ -80,6 +80,16 @@ stuffPlusUI <- function(id) {
           flex: 1;
         }
 
+        .source-toggle {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .source-toggle .btn {
+          flex: 1;
+        }
+
 
 
         .filter-section {
@@ -296,53 +306,73 @@ stuffPlusUI <- function(id) {
             # Player 1 Panel
             div(class = "player-panel",
                 div(class = "filters",
-                    div(class = "filter-section",
-                        span("Player Name", class = "filter-title"),
-                        selectizeInput(ns("player1_search"), label = NULL,
-                                       choices = NULL,
-                                       options = list(
-                                         placeholder = "Search pitcher...",
-                                         maxOptions = 1000
-                                       ))
-                    ),
-                    div(class = "filter-section",
-                        span("Season Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Pitch Metrics:"),
-                                uiOutput(ns("year_filter_ui1"))
-                            ),
+                    div(class = "source-toggle",
+                        radioGroupButtons(
+                            inputId = ns("player1_source"),
+                            label = NULL,
+                            choices = c("MLB Athletes" = "mlb", "P3 Athletes" = "p3"),
+                            selected = "mlb",
+                            justified = TRUE,
+                            individual = TRUE,
+                            status = "primary"
                         )
                     ),
-                    div(class = "filter-section",
-                        span("Game Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Pitch Metrics:"),
-                                uiOutput(ns("date_filter_ui1"))
-                            )
-                        )
-                    ),
-                    div(class = "filter-section",
-                        span("Performance Logs", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Logs:"),
-                                uiOutput(ns("logs_year_filter_ui1"))
+                    conditionalPanel(
+                        condition = sprintf("input['%s'] === 'mlb'", ns('player1_source')),
+                        div(
+                            class = "filters-body",
+                            div(class = "filter-section",
+                                span("Player Name", class = "filter-title"),
+                                selectizeInput(ns("player1_search"), label = NULL,
+                                               choices = NULL,
+                                               options = list(
+                                                 placeholder = "Search pitcher...",
+                                                 maxOptions = 1000
+                                               ))
                             ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Logs Range:"),
-                                uiOutput(ns("logs_range_filter_ui1"))
+                            div(class = "filter-section",
+                                span("Season Analysis", class = "filter-title"),
+                                div(class = "filter-grid",
+                                    div(class = "filter-item",
+                                        span(class = "filter-label", "Season Pitch Metrics:"),
+                                        uiOutput(ns("year_filter_ui1"))
+                                    ),
+                                )
                             ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Stats:"),
-                                uiOutput(ns("stats_year_filter_ui1"))
+                            div(class = "filter-section",
+                                span("Game Analysis", class = "filter-title"),
+                                div(class = "filter-grid",
+                                    div(class = "filter-item",
+                                        span(class = "filter-label", "Game Pitch Metrics:"),
+                                        uiOutput(ns("date_filter_ui1"))
+                                    )
+                                )
+                            ),
+                            div(class = "filter-section",
+                                span("Performance Logs", class = "filter-title"),
+                                div(class = "filter-grid",
+                                    div(class = "filter-item",
+                                        span(class = "filter-label", "Game Logs:"),
+                                        uiOutput(ns("logs_year_filter_ui1"))
+                                    ),
+                                    div(class = "filter-item",
+                                        span(class = "filter-label", "Logs Range:"),
+                                        uiOutput(ns("logs_range_filter_ui1"))
+                                    ),
+                                    div(class = "filter-item",
+                                        span(class = "filter-label", "Season Stats:"),
+                                        uiOutput(ns("stats_year_filter_ui1"))
+                                    )
+                                )
                             )
                         )
                     )
                 ),
-                div(class = "player-content",
-                    uiOutput(ns("player1_content"))
+                conditionalPanel(
+                    condition = sprintf("input['%s'] === 'mlb'", ns('player1_source')),
+                    div(class = "player-content",
+                        uiOutput(ns("player1_content"))
+                    )
                 )
             ),
             
@@ -350,54 +380,75 @@ stuffPlusUI <- function(id) {
             conditionalPanel(
                 condition = sprintf("input['%s'] === 'two'", ns('player_mode')),
                 div(class = "player-panel",
-                div(class = "filters",
-                    div(class = "filter-section",
-                        span("Player Name", class = "filter-title"),
-                        selectizeInput(ns("player2_search"), label = NULL,
-                                       choices = NULL,
-                                       options = list(
-                                         placeholder = "Search pitcher...",
-                                         maxOptions = 1000
-                                       ))
-                    ),
-                    div(class = "filter-section",
-                        span("Season Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Pitch Metrics:"),
-                                uiOutput(ns("year_filter_ui2"))
-                            ),
-                        )
-                    ),
-                    div(class = "filter-section",
-                        span("Game Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Pitch Metrics:"),
-                                uiOutput(ns("date_filter_ui2"))
+                    div(class = "filters",
+                        div(class = "source-toggle",
+                            radioGroupButtons(
+                                inputId = ns("player2_source"),
+                                label = NULL,
+                                choices = c("MLB Athletes" = "mlb", "P3 Athletes" = "p3"),
+                                selected = "mlb",
+                                justified = TRUE,
+                                individual = TRUE,
+                                status = "primary"
+                            )
+                        ),
+                        conditionalPanel(
+                            condition = sprintf("input['%s'] === 'mlb'", ns('player2_source')),
+                            div(
+                                class = "filters-body",
+                                div(class = "filter-section",
+                                    span("Player Name", class = "filter-title"),
+                                    selectizeInput(ns("player2_search"), label = NULL,
+                                                   choices = NULL,
+                                                   options = list(
+                                                     placeholder = "Search pitcher...",
+                                                     maxOptions = 1000
+                                                   ))
+                                ),
+                                div(class = "filter-section",
+                                    span("Season Analysis", class = "filter-title"),
+                                    div(class = "filter-grid",
+                                        div(class = "filter-item",
+                                            span(class = "filter-label", "Season Pitch Metrics:"),
+                                            uiOutput(ns("year_filter_ui2"))
+                                        ),
+                                    )
+                                ),
+                                div(class = "filter-section",
+                                    span("Game Analysis", class = "filter-title"),
+                                    div(class = "filter-grid",
+                                        div(class = "filter-item",
+                                            span(class = "filter-label", "Game Pitch Metrics:"),
+                                            uiOutput(ns("date_filter_ui2"))
+                                        )
+                                    )
+                                ),
+                                div(class = "filter-section",
+                                    span("Performance Logs", class = "filter-title"),
+                                    div(class = "filter-grid",
+                                        div(class = "filter-item",
+                                            span(class = "filter-label", "Game Logs:"),
+                                            uiOutput(ns("logs_year_filter_ui2"))
+                                        ),
+                                        div(class = "filter-item",
+                                            span(class = "filter-label", "Logs Range:"),
+                                            uiOutput(ns("logs_range_filter_ui2"))
+                                        ),
+                                        div(class = "filter-item",
+                                            span(class = "filter-label", "Season Stats:"),
+                                            uiOutput(ns("stats_year_filter_ui2"))
+                                        )
+                                    )
+                                )
                             )
                         )
                     ),
-                    div(class = "filter-section",
-                        span("Performance Logs", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Logs:"),
-                                uiOutput(ns("logs_year_filter_ui2"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Logs Range:"),
-                                uiOutput(ns("logs_range_filter_ui2"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Stats:"),
-                                uiOutput(ns("stats_year_filter_ui2"))
-                            )
+                    conditionalPanel(
+                        condition = sprintf("input['%s'] === 'mlb'", ns('player2_source')),
+                        div(class = "player-content",
+                            uiOutput(ns("player2_content"))
                         )
                     )
-                ),
-                div(class = "player-content",
-                    uiOutput(ns("player2_content"))
                 )
             )
             )
