@@ -33,6 +33,7 @@ stuffPlusUI <- function(id) {
           max-width: 1600px;
           margin: 0 auto;
           padding: 20px;
+          overflow-x: hidden;
         }
 
         .header-section {
@@ -57,6 +58,7 @@ stuffPlusUI <- function(id) {
           flex-direction: column;
           align-items: flex-start;
           justify-content: flex-start;
+          position: relative;
           margin-bottom: 16px;
           overflow: visible;
         }
@@ -107,7 +109,7 @@ stuffPlusUI <- function(id) {
         }
 
         .selectize-dropdown {
-          z-index: 9999 !important;
+          z-index: 10000 !important;
         }
 
         .filter-item {
@@ -187,12 +189,14 @@ stuffPlusUI <- function(id) {
         .plot-row {
           display: flex;
           gap: 10px;
+          flex-wrap: wrap;
         }
 
         .stuffplus-plot-wrapper,
         .breaks-plot-wrapper,
         .usage-plot-wrapper {
-          width: 33.33%;
+          flex: 1 1 calc((100% - 20px) / 3);
+          min-width: 250px;
           margin-bottom: 8px;
         }
 
