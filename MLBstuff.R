@@ -33,6 +33,7 @@ stuffPlusUI <- function(id) {
           max-width: 1600px;
           margin: 0 auto;
           padding: 20px;
+          overflow-x: hidden;
         }
 
         .header-section {
@@ -54,8 +55,12 @@ stuffPlusUI <- function(id) {
           padding: 16px;
           border-radius: 8px 8px 0 0;
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-start;
+          position: relative;
           margin-bottom: 16px;
+          overflow: visible;
         }
 
         .comparison-container {
@@ -68,7 +73,8 @@ stuffPlusUI <- function(id) {
           background: #fff;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          overflow: hidden;
+          position: relative;
+          overflow: visible;
           display: flex;
           flex-direction: column;
         }
@@ -103,7 +109,7 @@ stuffPlusUI <- function(id) {
         }
 
         .selectize-dropdown {
-          z-index: 9999 !important;
+          z-index: 10000 !important;
         }
 
         .filter-item {
@@ -183,12 +189,14 @@ stuffPlusUI <- function(id) {
         .plot-row {
           display: flex;
           gap: 10px;
+          flex-wrap: wrap;
         }
 
         .stuffplus-plot-wrapper,
         .breaks-plot-wrapper,
         .usage-plot-wrapper {
-          width: 33.33%;
+          flex: 1 1 calc((100% - 20px) / 3);
+          min-width: 250px;
           margin-bottom: 8px;
         }
 
@@ -274,11 +282,13 @@ stuffPlusUI <- function(id) {
             # Player 1 Panel
             div(class = "player-panel",
                 div(class = "player-header",
+                    span("Player Name", class = "filter-title"),
                     selectizeInput(ns("player1_search"), label = NULL,
                                    choices = NULL,
                                    options = list(
                                      placeholder = "Search pitcher...",
-                                     maxOptions = 1000
+                                     maxOptions = 1000,
+                                     dropdownParent = 'body'
                                    ))
                 ),
                 div(class = "filters",
@@ -326,11 +336,13 @@ stuffPlusUI <- function(id) {
             # Player 2 Panel
             div(class = "player-panel",
                 div(class = "player-header",
+                    span("Player Name", class = "filter-title"),
                     selectizeInput(ns("player2_search"), label = NULL,
                                    choices = NULL,
                                    options = list(
                                      placeholder = "Search pitcher...",
-                                     maxOptions = 1000
+                                     maxOptions = 1000,
+                                     dropdownParent = 'body'
                                    ))
                 ),
                 div(class = "filters",
@@ -601,7 +613,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split1"), label = "Summary per season", value = FALSE)
       )
     })
     
@@ -699,7 +711,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split2"), label = "Summary per season", value = FALSE)
       )
     })
     
