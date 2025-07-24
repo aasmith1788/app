@@ -204,7 +204,7 @@ stuffPlusUI <- function(id) {
         }
 
         table.dataTable {
-          font-size: 11px;
+          font-size: 9px;
           border-collapse: collapse;
           width: 100%;
         }
@@ -214,19 +214,19 @@ stuffPlusUI <- function(id) {
           border-bottom: 2px solid #e5e5e5;
           font-weight: 600;
           color: #666;
-          padding: 6px 2px;
+          padding: 4px 2px;
           text-align: center;
-          font-size: 10px;
+          font-size: 8px;
           text-transform: uppercase;
           letter-spacing: 0.3px;
         }
 
         table.dataTable tbody td {
           border-bottom: 1px solid #f0f0f0;
-          padding: 4px 2px;
+          padding: 3px 1px;
           text-align: center;
           color: #1a1a1a;
-          font-size: 11px;
+          font-size: 9px;
           white-space: nowrap;
         }
 
@@ -980,10 +980,10 @@ stuffPlusServer <- function(id) {
           ordering = FALSE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
-            list(width = "25px", targets = 0),  # Type
-            list(width = "35px", targets = 1),  # Count
-            list(width = "28px", targets = c(2:8)),  # Stats
-            list(width = "35px", targets = c(9:12))  # Percentages
+            list(width = "20px", targets = 0),  # Type
+            list(width = "33px", targets = 1),  # Count
+            list(width = "24px", targets = c(2:8)),  # Stats
+            list(width = "28px", targets = c(9:12))  # Percentages
           )
         ),
         rownames = FALSE,
@@ -991,7 +991,7 @@ stuffPlusServer <- function(id) {
       ) %>%
         formatStyle(
           columns = 1:ncol(summary_data),
-          fontSize = '10px'
+          fontSize = '9px'
         ) %>%
         formatStyle(
           "Type",
