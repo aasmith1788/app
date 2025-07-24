@@ -601,7 +601,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split1"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split1"), label = "Summary per season", value = FALSE)
       )
     })
     
@@ -699,7 +699,7 @@ stuffPlusServer <- function(id) {
               size = 10
             )
           ),
-          checkboxInput(ns("season_split2"), label = NULL, value = FALSE)
+          checkboxInput(ns("season_split2"), label = "Summary per season", value = FALSE)
       )
     })
     
