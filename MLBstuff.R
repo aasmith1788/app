@@ -56,6 +56,7 @@ stuffPlusUI <- function(id) {
           display: flex;
           justify-content: center;
           margin-bottom: 16px;
+          overflow: visible;
         }
 
         .comparison-container {
@@ -68,6 +69,7 @@ stuffPlusUI <- function(id) {
           background: #fff;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          position: relative;
           overflow: visible;
           display: flex;
           flex-direction: column;
@@ -278,7 +280,8 @@ stuffPlusUI <- function(id) {
                                    choices = NULL,
                                    options = list(
                                      placeholder = "Search pitcher...",
-                                     maxOptions = 1000
+                                     maxOptions = 1000,
+                                     dropdownParent = 'body'
                                    ))
                 ),
                 div(class = "filters",
@@ -330,7 +333,8 @@ stuffPlusUI <- function(id) {
                                    choices = NULL,
                                    options = list(
                                      placeholder = "Search pitcher...",
-                                     maxOptions = 1000
+                                     maxOptions = 1000,
+                                     dropdownParent = 'body'
                                    ))
                 ),
                 div(class = "filters",
