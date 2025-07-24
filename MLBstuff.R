@@ -54,7 +54,9 @@ stuffPlusUI <- function(id) {
           padding: 16px;
           border-radius: 8px 8px 0 0;
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: flex-start;
+          justify-content: flex-start;
           margin-bottom: 16px;
           overflow: visible;
         }
@@ -276,6 +278,7 @@ stuffPlusUI <- function(id) {
             # Player 1 Panel
             div(class = "player-panel",
                 div(class = "player-header",
+                    span("Player Name", class = "filter-title"),
                     selectizeInput(ns("player1_search"), label = NULL,
                                    choices = NULL,
                                    options = list(
@@ -329,6 +332,7 @@ stuffPlusUI <- function(id) {
             # Player 2 Panel
             div(class = "player-panel",
                 div(class = "player-header",
+                    span("Player Name", class = "filter-title"),
                     selectizeInput(ns("player2_search"), label = NULL,
                                    choices = NULL,
                                    options = list(
