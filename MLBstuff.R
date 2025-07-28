@@ -570,11 +570,14 @@ stuffPlusServer <- function(id) {
           pfx_x = as.numeric(pfx_x_inches),
           pfx_z = as.numeric(pfx_z_inches),
           plate_x = as.numeric(plate_location_side),
-          plate_z = as.numeric(plate_location_height)
+          plate_z = as.numeric(plate_location_height),
+          formatted_name = paste(firstname, lastname)
         )
     } else {
       p3_data <- NULL
     }
+
+    p3_names <- if (!is.null(p3_data)) sort(unique(p3_data$formatted_name)) else character(0)
     
     # ---- 2. Reactive values for both players -------------------------
     player1_data <- reactiveVal(NULL)
@@ -582,6 +585,11 @@ stuffPlusServer <- function(id) {
     p3_filtered_data1 <- reactive({
       req(p3_data)
       df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      } else {
+        df <- df[0, ]
+      }
       if (!is.null(input$p3_date_filter1) && length(input$p3_date_filter1) > 0) {
         df <- df %>% filter(as.Date(date) %in% as.Date(input$p3_date_filter1))
       }
@@ -594,6 +602,11 @@ stuffPlusServer <- function(id) {
     p3_filtered_data2 <- reactive({
       req(p3_data)
       df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      } else {
+        df <- df[0, ]
+      }
       if (!is.null(input$p3_date_filter2) && length(input$p3_date_filter2) > 0) {
         df <- df %>% filter(as.Date(date) %in% as.Date(input$p3_date_filter2))
       }
@@ -610,7 +623,7 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$filter_toggle1, {
-      choices <- if (input$filter_toggle1 == "MLB") mlb_names else character(0)
+      choices <- if (input$filter_toggle1 == "MLB") mlb_names else if (input$filter_toggle1 == "P3") p3_names else character(0)
       updateSelectizeInput(session, "player1_search",
                            choices = choices,
                            selected = "",
@@ -640,7 +653,7 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$filter_toggle2, {
-      choices <- if (input$filter_toggle2 == "MLB") mlb_names else character(0)
+      choices <- if (input$filter_toggle2 == "MLB") mlb_names else if (input$filter_toggle2 == "P3") p3_names else character(0)
       updateSelectizeInput(session, "player2_search",
                            choices = choices,
                            selected = "",
@@ -670,10 +683,16 @@ stuffPlusServer <- function(id) {
 
       if (input$filter_toggle1 == "P3") {
         df <- p3_filtered_data1()
-        pitch_count <- if (!is.null(df)) nrow(df) else 0
+        if (is.null(df) || nrow(df) == 0) {
+          return(div(class = "no-results",
+                     h3("Select Player 1"),
+                     p("Enter a P3 pitcher's name in the search box above.")))
+        }
+        pitch_count <- nrow(df)
+        player_name <- input$player1_search
         tagList(
           div(class = "results-header",
-              h2("P3 Player", class = "player-name"),
+              h2(player_name, class = "player-name"),
               span(class = "pitch-count",
                    paste(pitch_count, "pitches"))
           ),
@@ -721,10 +740,16 @@ stuffPlusServer <- function(id) {
 
       if (input$filter_toggle2 == "P3") {
         df <- p3_filtered_data2()
-        pitch_count <- if (!is.null(df)) nrow(df) else 0
+        if (is.null(df) || nrow(df) == 0) {
+          return(div(class = "no-results",
+                     h3("Select Player 2"),
+                     p("Enter a P3 pitcher's name in the search box above.")))
+        }
+        pitch_count <- nrow(df)
+        player_name <- input$player2_search
         tagList(
           div(class = "results-header",
-              h2("P3 Player", class = "player-name"),
+              h2(player_name, class = "player-name"),
               span(class = "pitch-count",
                    paste(pitch_count, "pitches"))
           ),
@@ -867,7 +892,11 @@ stuffPlusServer <- function(id) {
     output$p3_date_filter_ui1 <- renderUI({
       req(p3_data)
       ns <- session$ns
-      dates <- sort(unique(as.Date(p3_data$date)))
+      df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      }
+      dates <- sort(unique(as.Date(df$date)))
       pickerInput(
         inputId = ns("p3_date_filter1"),
         label = NULL,
@@ -884,7 +913,11 @@ stuffPlusServer <- function(id) {
     output$p3_pitch_filter_ui1 <- renderUI({
       req(p3_data)
       ns <- session$ns
-      types <- sort(unique(p3_data$pitch_type))
+      df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      }
+      types <- sort(unique(df$pitch_type))
       pickerInput(
         inputId = ns("p3_pitch_filter1"),
         label = NULL,
@@ -952,7 +985,11 @@ stuffPlusServer <- function(id) {
     output$p3_date_filter_ui2 <- renderUI({
       req(p3_data)
       ns <- session$ns
-      dates <- sort(unique(as.Date(p3_data$date)))
+      df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      }
+      dates <- sort(unique(as.Date(df$date)))
       pickerInput(
         inputId = ns("p3_date_filter2"),
         label = NULL,
@@ -969,7 +1006,11 @@ stuffPlusServer <- function(id) {
     output$p3_pitch_filter_ui2 <- renderUI({
       req(p3_data)
       ns <- session$ns
-      types <- sort(unique(p3_data$pitch_type))
+      df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      }
+      types <- sort(unique(df$pitch_type))
       pickerInput(
         inputId = ns("p3_pitch_filter2"),
         label = NULL,
