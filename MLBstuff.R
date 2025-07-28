@@ -560,9 +560,14 @@ stuffPlusServer <- function(id) {
 
     # ---- 1b. Load P3 athlete data ----------------------------------
     p3_url <- "https://docs.google.com/spreadsheets/d/15lXLVrocMhrguFjyNk8is67kWj-0qU_Lyk3o1vfCWLA"
-    gs4_deauth()
-    p3_data_raw <- tryCatch(read_sheet(p3_url, sheet = "Stuff Plus", show_col_types = FALSE),
-                            error = function(e) NULL)
+    gs4_auth(email = "asmith8@bu.edu", cache = ".secrets")
+    p3_data_raw <- tryCatch(
+      read_sheet(p3_url, sheet = "Stuff Plus", show_col_types = FALSE),
+      error = function(e) {
+        message("Error reading P3 sheet: ", e$message)
+        NULL
+      }
+    )
     if (!is.null(p3_data_raw)) {
       p3_data <- p3_data_raw %>%
         mutate(
