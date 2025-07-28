@@ -75,6 +75,16 @@ stuffPlusUI <- function(id) {
           flex: 1;
         }
 
+        .filter-header {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .filter-header .btn {
+          flex: 1;
+        }
+
         .player-panel {
           background: #fff;
           border-radius: 8px;
@@ -304,40 +314,60 @@ stuffPlusUI <- function(id) {
                                    ))
                 ),
                 div(class = "filters",
-                    div(class = "filter-section",
-                        span("Season Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Pitch Metrics:"),
-                                uiOutput(ns("year_filter_ui1"))
-                            ),
+                    div(class = "filter-header",
+                        radioGroupButtons(
+                          inputId = ns("filter_toggle1"),
+                          label = NULL,
+                          choices = c("MLB", "P3"),
+                          selected = "MLB",
+                          justified = TRUE,
+                          individual = TRUE,
+                          status = "primary"
                         )
                     ),
-                    div(class = "filter-section",
-                        span("Game Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Pitch Metrics:"),
-                                uiOutput(ns("date_filter_ui1"))
-                            )
-                        )
+                    conditionalPanel(
+                      condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle1')),
+                      div(class = "filter-section",
+                          span("Season Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Pitch Metrics:"),
+                                  uiOutput(ns("year_filter_ui1"))
+                              ),
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Game Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Pitch Metrics:"),
+                                  uiOutput(ns("date_filter_ui1"))
+                              )
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Performance Logs", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Logs:"),
+                                  uiOutput(ns("logs_year_filter_ui1"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Logs Range:"),
+                                  uiOutput(ns("logs_range_filter_ui1"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Stats:"),
+                                  uiOutput(ns("stats_year_filter_ui1"))
+                              )
+                          )
+                      )
                     ),
-                    div(class = "filter-section",
-                        span("Performance Logs", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Logs:"),
-                                uiOutput(ns("logs_year_filter_ui1"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Logs Range:"),
-                                uiOutput(ns("logs_range_filter_ui1"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Stats:"),
-                                uiOutput(ns("stats_year_filter_ui1"))
-                            )
-                        )
+                    conditionalPanel(
+                      condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle1')),
+                      div(class = "filter-section",
+                          span("P3 filters coming soon", class = "filter-title")
+                      )
                     )
                 ),
                 div(class = "player-content",
@@ -358,40 +388,60 @@ stuffPlusUI <- function(id) {
                                      ))
                   ),
                   div(class = "filters",
-                      div(class = "filter-section",
-                          span("Season Analysis", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Season Pitch Metrics:"),
-                                  uiOutput(ns("year_filter_ui2"))
-                              ),
+                      div(class = "filter-header",
+                          radioGroupButtons(
+                            inputId = ns("filter_toggle2"),
+                            label = NULL,
+                            choices = c("MLB", "P3"),
+                            selected = "MLB",
+                            justified = TRUE,
+                            individual = TRUE,
+                            status = "primary"
                           )
                       ),
-                      div(class = "filter-section",
-                          span("Game Analysis", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Game Pitch Metrics:"),
-                                  uiOutput(ns("date_filter_ui2"))
-                              )
-                          )
+                      conditionalPanel(
+                        condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle2')),
+                        div(class = "filter-section",
+                            span("Season Analysis", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Season Pitch Metrics:"),
+                                    uiOutput(ns("year_filter_ui2"))
+                                ),
+                            )
+                        ),
+                        div(class = "filter-section",
+                            span("Game Analysis", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Game Pitch Metrics:"),
+                                    uiOutput(ns("date_filter_ui2"))
+                                )
+                            )
+                        ),
+                        div(class = "filter-section",
+                            span("Performance Logs", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Game Logs:"),
+                                    uiOutput(ns("logs_year_filter_ui2"))
+                                ),
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Logs Range:"),
+                                    uiOutput(ns("logs_range_filter_ui2"))
+                                ),
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Season Stats:"),
+                                    uiOutput(ns("stats_year_filter_ui2"))
+                                )
+                            )
+                        )
                       ),
-                      div(class = "filter-section",
-                          span("Performance Logs", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Game Logs:"),
-                                  uiOutput(ns("logs_year_filter_ui2"))
-                              ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Logs Range:"),
-                                  uiOutput(ns("logs_range_filter_ui2"))
-                              ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Season Stats:"),
-                                  uiOutput(ns("stats_year_filter_ui2"))
-                              )
-                          )
+                      conditionalPanel(
+                        condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
+                        div(class = "filter-section",
+                            span("P3 filters coming soon", class = "filter-title")
+                        )
                       )
                   ),
                   div(class = "player-content",
