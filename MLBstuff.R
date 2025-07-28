@@ -49,15 +49,6 @@ stuffPlusUI <- function(id) {
           margin: 0 0 16px 0;
         }
 
-        .player-header {
-          background: rgba(255,255,255,0.5);
-          backdrop-filter: blur(8px);
-          padding: 16px;
-          border-radius: 8px 8px 0 0;
-          display: flex;
-          justify-content: center;
-          margin-bottom: 16px;
-        }
 
         .comparison-container {
           display: grid;
@@ -305,14 +296,6 @@ stuffPlusUI <- function(id) {
         div(class = "comparison-container",
             # Player 1 Panel
             div(class = "player-panel",
-                div(class = "player-header",
-                    selectizeInput(ns("player1_search"), label = NULL,
-                                   choices = NULL,
-                                   options = list(
-                                     placeholder = "Search pitcher...",
-                                     maxOptions = 1000
-                                   ))
-                ),
                 div(class = "filters",
                     div(class = "filter-header",
                         radioGroupButtons(
@@ -325,6 +308,12 @@ stuffPlusUI <- function(id) {
                           status = "primary"
                         )
                     ),
+                    selectizeInput(ns("player1_search"), label = NULL,
+                                   choices = NULL,
+                                   options = list(
+                                     placeholder = "Search pitcher...",
+                                     maxOptions = 1000
+                                   )),
                     conditionalPanel(
                       condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle1')),
                       div(class = "filter-section",
@@ -379,26 +368,24 @@ stuffPlusUI <- function(id) {
             conditionalPanel(
               condition = sprintf("input['%s'] === 'two'", ns('player_mode')),
               div(class = "player-panel",
-                  div(class = "player-header",
+                  div(class = "filters",
+                      div(class = "filter-header",
+                        radioGroupButtons(
+                          inputId = ns("filter_toggle2"),
+                          label = NULL,
+                          choices = c("MLB", "P3"),
+                          selected = "MLB",
+                          justified = TRUE,
+                          individual = TRUE,
+                          status = "primary"
+                        )
+                      ),
                       selectizeInput(ns("player2_search"), label = NULL,
                                      choices = NULL,
                                      options = list(
                                        placeholder = "Search pitcher...",
                                        maxOptions = 1000
-                                     ))
-                  ),
-                  div(class = "filters",
-                      div(class = "filter-header",
-                          radioGroupButtons(
-                            inputId = ns("filter_toggle2"),
-                            label = NULL,
-                            choices = c("MLB", "P3"),
-                            selected = "MLB",
-                            justified = TRUE,
-                            individual = TRUE,
-                            status = "primary"
-                          )
-                      ),
+                                     )),
                       conditionalPanel(
                         condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle2')),
                         div(class = "filter-section",
@@ -547,7 +534,9 @@ stuffPlusServer <- function(id) {
         game_date_formatted = format(as.Date(game_date), "%b %d, %Y")
       ) %>%
       select(-mean_predicted_target, -sd_predicted_target, -n_pitches, -name_parts)
-    
+
+    mlb_names <- sort(unique(all_pitches$formatted_name))
+
     # ---- 2. Reactive values for both players -------------------------
     player1_data <- reactiveVal(NULL)
     player2_data <- reactiveVal(NULL)
@@ -555,33 +544,59 @@ stuffPlusServer <- function(id) {
     # ---- 3. Search functionality for both players --------------------
     # Player 1
     updateSelectizeInput(session, "player1_search",
-                         choices = sort(unique(all_pitches$formatted_name)),
+                         choices = mlb_names,
                          server = TRUE)
-    
+
+    observeEvent(input$filter_toggle1, {
+      choices <- if (input$filter_toggle1 == "MLB") mlb_names else character(0)
+      updateSelectizeInput(session, "player1_search",
+                           choices = choices,
+                           selected = "",
+                           server = TRUE)
+      player1_data(NULL)
+    })
+
     observeEvent(input$player1_search, {
       req(input$player1_search)
-      data <- all_pitches %>%
-        filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
-      
-      if (nrow(data) > 0) {
-        player1_data(data)
+      if (input$filter_toggle1 == "MLB") {
+        data <- all_pitches %>%
+          filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+
+        if (nrow(data) > 0) {
+          player1_data(data)
+        } else {
+          player1_data(NULL)
+        }
       } else {
         player1_data(NULL)
       }
     })
-    
+
     # Player 2
     updateSelectizeInput(session, "player2_search",
-                         choices = sort(unique(all_pitches$formatted_name)),
+                         choices = mlb_names,
                          server = TRUE)
-    
+
+    observeEvent(input$filter_toggle2, {
+      choices <- if (input$filter_toggle2 == "MLB") mlb_names else character(0)
+      updateSelectizeInput(session, "player2_search",
+                           choices = choices,
+                           selected = "",
+                           server = TRUE)
+      player2_data(NULL)
+    })
+
     observeEvent(input$player2_search, {
       req(input$player2_search)
-      data <- all_pitches %>%
-        filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
-      
-      if (nrow(data) > 0) {
-        player2_data(data)
+      if (input$filter_toggle2 == "MLB") {
+        data <- all_pitches %>%
+          filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+
+        if (nrow(data) > 0) {
+          player2_data(data)
+        } else {
+          player2_data(NULL)
+        }
       } else {
         player2_data(NULL)
       }
