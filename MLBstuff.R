@@ -49,15 +49,6 @@ stuffPlusUI <- function(id) {
           margin: 0 0 16px 0;
         }
 
-        .player-header {
-          background: rgba(255,255,255,0.5);
-          backdrop-filter: blur(8px);
-          padding: 16px;
-          border-radius: 8px 8px 0 0;
-          display: flex;
-          justify-content: center;
-          margin-bottom: 16px;
-        }
 
         .comparison-container {
           display: grid;
@@ -72,6 +63,16 @@ stuffPlusUI <- function(id) {
         }
 
         .mode-toggle .btn {
+          flex: 1;
+        }
+
+        .filter-header {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .filter-header .btn {
           flex: 1;
         }
 
@@ -295,49 +296,67 @@ stuffPlusUI <- function(id) {
         div(class = "comparison-container",
             # Player 1 Panel
             div(class = "player-panel",
-                div(class = "player-header",
+                div(class = "filters",
+                    div(class = "filter-header",
+                        radioGroupButtons(
+                          inputId = ns("filter_toggle1"),
+                          label = NULL,
+                          choices = c("MLB", "P3"),
+                          selected = "MLB",
+                          justified = TRUE,
+                          individual = TRUE,
+                          status = "primary"
+                        )
+                    ),
                     selectizeInput(ns("player1_search"), label = NULL,
                                    choices = NULL,
                                    options = list(
                                      placeholder = "Search pitcher...",
                                      maxOptions = 1000
-                                   ))
-                ),
-                div(class = "filters",
-                    div(class = "filter-section",
-                        span("Season Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Pitch Metrics:"),
-                                uiOutput(ns("year_filter_ui1"))
-                            ),
-                        )
+                                   )),
+                    conditionalPanel(
+                      condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle1')),
+                      div(class = "filter-section",
+                          span("Season Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Pitch Metrics:"),
+                                  uiOutput(ns("year_filter_ui1"))
+                              ),
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Game Analysis", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Pitch Metrics:"),
+                                  uiOutput(ns("date_filter_ui1"))
+                              )
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Performance Logs", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Game Logs:"),
+                                  uiOutput(ns("logs_year_filter_ui1"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Logs Range:"),
+                                  uiOutput(ns("logs_range_filter_ui1"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Season Stats:"),
+                                  uiOutput(ns("stats_year_filter_ui1"))
+                              )
+                          )
+                      )
                     ),
-                    div(class = "filter-section",
-                        span("Game Analysis", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Pitch Metrics:"),
-                                uiOutput(ns("date_filter_ui1"))
-                            )
-                        )
-                    ),
-                    div(class = "filter-section",
-                        span("Performance Logs", class = "filter-title"),
-                        div(class = "filter-grid",
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Game Logs:"),
-                                uiOutput(ns("logs_year_filter_ui1"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Logs Range:"),
-                                uiOutput(ns("logs_range_filter_ui1"))
-                            ),
-                            div(class = "filter-item",
-                                span(class = "filter-label", "Season Stats:"),
-                                uiOutput(ns("stats_year_filter_ui1"))
-                            )
-                        )
+                    conditionalPanel(
+                      condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle1')),
+                      div(class = "filter-section",
+                          span("P3 filters coming soon", class = "filter-title")
+                      )
                     )
                 ),
                 div(class = "player-content",
@@ -349,49 +368,67 @@ stuffPlusUI <- function(id) {
             conditionalPanel(
               condition = sprintf("input['%s'] === 'two'", ns('player_mode')),
               div(class = "player-panel",
-                  div(class = "player-header",
+                  div(class = "filters",
+                      div(class = "filter-header",
+                          radioGroupButtons(
+                            inputId = ns("filter_toggle2"),
+                            label = NULL,
+                            choices = c("MLB", "P3"),
+                            selected = "MLB",
+                            justified = TRUE,
+                            individual = TRUE,
+                            status = "primary"
+                          )
+                      ),
                       selectizeInput(ns("player2_search"), label = NULL,
                                      choices = NULL,
                                      options = list(
                                        placeholder = "Search pitcher...",
                                        maxOptions = 1000
-                                     ))
-                  ),
-                  div(class = "filters",
-                      div(class = "filter-section",
-                          span("Season Analysis", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Season Pitch Metrics:"),
-                                  uiOutput(ns("year_filter_ui2"))
-                              ),
-                          )
+                                     )),
+                      conditionalPanel(
+                        condition = sprintf("input['%s'] === 'MLB'", ns('filter_toggle2')),
+                        div(class = "filter-section",
+                            span("Season Analysis", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Season Pitch Metrics:"),
+                                    uiOutput(ns("year_filter_ui2"))
+                                ),
+                            )
+                        ),
+                        div(class = "filter-section",
+                            span("Game Analysis", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Game Pitch Metrics:"),
+                                    uiOutput(ns("date_filter_ui2"))
+                                )
+                            )
+                        ),
+                        div(class = "filter-section",
+                            span("Performance Logs", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Game Logs:"),
+                                    uiOutput(ns("logs_year_filter_ui2"))
+                                ),
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Logs Range:"),
+                                    uiOutput(ns("logs_range_filter_ui2"))
+                                ),
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Season Stats:"),
+                                    uiOutput(ns("stats_year_filter_ui2"))
+                                )
+                            )
+                        )
                       ),
-                      div(class = "filter-section",
-                          span("Game Analysis", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Game Pitch Metrics:"),
-                                  uiOutput(ns("date_filter_ui2"))
-                              )
-                          )
-                      ),
-                      div(class = "filter-section",
-                          span("Performance Logs", class = "filter-title"),
-                          div(class = "filter-grid",
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Game Logs:"),
-                                  uiOutput(ns("logs_year_filter_ui2"))
-                              ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Logs Range:"),
-                                  uiOutput(ns("logs_range_filter_ui2"))
-                              ),
-                              div(class = "filter-item",
-                                  span(class = "filter-label", "Season Stats:"),
-                                  uiOutput(ns("stats_year_filter_ui2"))
-                              )
-                          )
+                      conditionalPanel(
+                        condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
+                        div(class = "filter-section",
+                            span("P3 filters coming soon", class = "filter-title")
+                        )
                       )
                   ),
                   div(class = "player-content",
@@ -498,6 +535,8 @@ stuffPlusServer <- function(id) {
       ) %>%
       select(-mean_predicted_target, -sd_predicted_target, -n_pitches, -name_parts)
     
+    mlb_names <- sort(unique(all_pitches$formatted_name))
+    
     # ---- 2. Reactive values for both players -------------------------
     player1_data <- reactiveVal(NULL)
     player2_data <- reactiveVal(NULL)
@@ -505,16 +544,29 @@ stuffPlusServer <- function(id) {
     # ---- 3. Search functionality for both players --------------------
     # Player 1
     updateSelectizeInput(session, "player1_search",
-                         choices = sort(unique(all_pitches$formatted_name)),
+                         choices = mlb_names,
                          server = TRUE)
+    
+    observeEvent(input$filter_toggle1, {
+      choices <- if (input$filter_toggle1 == "MLB") mlb_names else character(0)
+      updateSelectizeInput(session, "player1_search",
+                           choices = choices,
+                           selected = "",
+                           server = TRUE)
+      player1_data(NULL)
+    })
     
     observeEvent(input$player1_search, {
       req(input$player1_search)
-      data <- all_pitches %>%
-        filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
-      
-      if (nrow(data) > 0) {
-        player1_data(data)
+      if (input$filter_toggle1 == "MLB") {
+        data <- all_pitches %>%
+          filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+        
+        if (nrow(data) > 0) {
+          player1_data(data)
+        } else {
+          player1_data(NULL)
+        }
       } else {
         player1_data(NULL)
       }
@@ -522,16 +574,29 @@ stuffPlusServer <- function(id) {
     
     # Player 2
     updateSelectizeInput(session, "player2_search",
-                         choices = sort(unique(all_pitches$formatted_name)),
+                         choices = mlb_names,
                          server = TRUE)
+    
+    observeEvent(input$filter_toggle2, {
+      choices <- if (input$filter_toggle2 == "MLB") mlb_names else character(0)
+      updateSelectizeInput(session, "player2_search",
+                           choices = choices,
+                           selected = "",
+                           server = TRUE)
+      player2_data(NULL)
+    })
     
     observeEvent(input$player2_search, {
       req(input$player2_search)
-      data <- all_pitches %>%
-        filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
-      
-      if (nrow(data) > 0) {
-        player2_data(data)
+      if (input$filter_toggle2 == "MLB") {
+        data <- all_pitches %>%
+          filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+        
+        if (nrow(data) > 0) {
+          player2_data(data)
+        } else {
+          player2_data(NULL)
+        }
       } else {
         player2_data(NULL)
       }
