@@ -11,6 +11,7 @@ library(httr)
 library(jsonlite)
 library(glue)
 library(purrr)
+library(googlesheets4)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -355,7 +356,17 @@ stuffPlusUI <- function(id) {
                     conditionalPanel(
                       condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle1')),
                       div(class = "filter-section",
-                          span("P3 filters coming soon", class = "filter-title")
+                          span("Outing Filters", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Date:"),
+                                  uiOutput(ns("p3_date_filter_ui1"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Pitch Types:"),
+                                  uiOutput(ns("p3_pitch_filter_ui1"))
+                              )
+                          )
                       )
                     )
                 ),
@@ -425,11 +436,21 @@ stuffPlusUI <- function(id) {
                         )
                       ),
                       conditionalPanel(
-                        condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
-                        div(class = "filter-section",
-                            span("P3 filters coming soon", class = "filter-title")
-                        )
+                      condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
+                      div(class = "filter-section",
+                          span("Outing Filters", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Date:"),
+                                  uiOutput(ns("p3_date_filter_ui2"))
+                              ),
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Pitch Types:"),
+                                  uiOutput(ns("p3_pitch_filter_ui2"))
+                              )
+                          )
                       )
+                    )
                   ),
                   div(class = "player-content",
                       uiOutput(ns("player2_content"))
@@ -536,10 +557,70 @@ stuffPlusServer <- function(id) {
       select(-mean_predicted_target, -sd_predicted_target, -n_pitches, -name_parts)
     
     mlb_names <- sort(unique(all_pitches$formatted_name))
+
+    # ---- 1b. Load P3 athlete data ----------------------------------
+    p3_url <- "https://docs.google.com/spreadsheets/d/15lXLVrocMhrguFjyNk8is67kWj-0qU_Lyk3o1vfCWLA"
+    options(gargle_oauth_cache = ".secrets")
+    gs4_auth(email = "asmith8@bu.edu", cache = TRUE)
+    p3_data_raw <- tryCatch(
+      read_sheet(p3_url, sheet = "Stuff Plus"),
+      error = function(e) {
+        message("Error reading P3 sheet: ", e$message)
+        NULL
+      }
+    )
+    if (!is.null(p3_data_raw)) {
+      p3_data <- p3_data_raw %>%
+        mutate(
+          date = as.Date(date),
+          pfx_x = as.numeric(pfx_x_inches),
+          pfx_z = as.numeric(pfx_z_inches),
+          plate_x = as.numeric(plate_location_side),
+          plate_z = as.numeric(plate_location_height),
+          formatted_name = paste(firstname, lastname)
+        )
+    } else {
+      p3_data <- NULL
+    }
+
+    p3_names <- if (!is.null(p3_data)) sort(unique(p3_data$formatted_name)) else character(0)
     
     # ---- 2. Reactive values for both players -------------------------
     player1_data <- reactiveVal(NULL)
     player2_data <- reactiveVal(NULL)
+    p3_filtered_data1 <- reactive({
+      req(p3_data)
+      df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      } else {
+        df <- df[0, ]
+      }
+      if (!is.null(input$p3_date_filter1) && length(input$p3_date_filter1) > 0) {
+        df <- df %>% filter(as.Date(date) %in% as.Date(input$p3_date_filter1))
+      }
+      if (!is.null(input$p3_pitch_filter1) && length(input$p3_pitch_filter1) > 0) {
+        df <- df %>% filter(pitch_type %in% input$p3_pitch_filter1)
+      }
+      df
+    })
+
+    p3_filtered_data2 <- reactive({
+      req(p3_data)
+      df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      } else {
+        df <- df[0, ]
+      }
+      if (!is.null(input$p3_date_filter2) && length(input$p3_date_filter2) > 0) {
+        df <- df %>% filter(as.Date(date) %in% as.Date(input$p3_date_filter2))
+      }
+      if (!is.null(input$p3_pitch_filter2) && length(input$p3_pitch_filter2) > 0) {
+        df <- df %>% filter(pitch_type %in% input$p3_pitch_filter2)
+      }
+      df
+    })
     
     # ---- 3. Search functionality for both players --------------------
     # Player 1
@@ -548,7 +629,7 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$filter_toggle1, {
-      choices <- if (input$filter_toggle1 == "MLB") mlb_names else character(0)
+      choices <- if (input$filter_toggle1 == "MLB") mlb_names else if (input$filter_toggle1 == "P3") p3_names else character(0)
       updateSelectizeInput(session, "player1_search",
                            choices = choices,
                            selected = "",
@@ -578,7 +659,7 @@ stuffPlusServer <- function(id) {
                          server = TRUE)
     
     observeEvent(input$filter_toggle2, {
-      choices <- if (input$filter_toggle2 == "MLB") mlb_names else character(0)
+      choices <- if (input$filter_toggle2 == "MLB") mlb_names else if (input$filter_toggle2 == "P3") p3_names else character(0)
       updateSelectizeInput(session, "player2_search",
                            choices = choices,
                            selected = "",
@@ -605,68 +686,114 @@ stuffPlusServer <- function(id) {
     # ---- 4. Player 1 UI outputs --------------------------------------
     output$player1_content <- renderUI({
       ns <- session$ns
-      
-      if (is.null(player1_data())) {
-        if (!is.null(input$player1_search) && nchar(input$player1_search) > 0) {
-          div(class = "no-results",
-              h3("No results found"),
-              p("Try searching with a different name.")
-          )
-        } else {
-          div(class = "no-results",
-              h3("Select Player 1"),
-              p("Enter a pitcher's name in the search box above.")
-          )
+
+      if (input$filter_toggle1 == "P3") {
+        df <- p3_filtered_data1()
+        if (is.null(df) || nrow(df) == 0) {
+          return(div(class = "no-results",
+                     h3("Select Player 1"),
+                     p("Enter a P3 pitcher's name in the search box above.")))
         }
-      } else {
-        data <- player1_data()
-        player_name <- unique(data$formatted_name)[1]
-        
+        pitch_count <- nrow(df)
+        player_name <- input$player1_search
         tagList(
           div(class = "results-header",
               h2(player_name, class = "player-name"),
               span(class = "pitch-count",
-                   textOutput(ns("pitch_count1"), inline = TRUE))
+                   paste(pitch_count, "pitches"))
           ),
-          uiOutput(ns("season_summary_ui1")),
-          uiOutput(ns("game_summary_ui1")),
-          uiOutput(ns("game_logs_ui1")),
-          uiOutput(ns("season_stats_ui1"))
+          div(class = "plot-row",
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("p3_movement_plot1"), height = "300px")),
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("p3_location_plot1"), height = "300px"))
+          ),
+          div(class = "data-table-container", DTOutput(ns("p3_table1")))
         )
+      } else {
+        if (is.null(player1_data())) {
+          if (!is.null(input$player1_search) && nchar(input$player1_search) > 0) {
+            div(class = "no-results",
+                h3("No results found"),
+                p("Try searching with a different name.")
+            )
+          } else {
+            div(class = "no-results",
+                h3("Select Player 1"),
+                p("Enter a pitcher's name in the search box above.")
+            )
+          }
+        } else {
+          data <- player1_data()
+          player_name <- unique(data$formatted_name)[1]
+
+          tagList(
+            div(class = "results-header",
+                h2(player_name, class = "player-name"),
+                span(class = "pitch-count",
+                     textOutput(ns("pitch_count1"), inline = TRUE))
+            ),
+            uiOutput(ns("season_summary_ui1")),
+            uiOutput(ns("game_summary_ui1")),
+            uiOutput(ns("game_logs_ui1")),
+            uiOutput(ns("season_stats_ui1"))
+          )
+        }
       }
     })
     
     # ---- 5. Player 2 UI outputs --------------------------------------
     output$player2_content <- renderUI({
       ns <- session$ns
-      
-      if (is.null(player2_data())) {
-        if (!is.null(input$player2_search) && nchar(input$player2_search) > 0) {
-          div(class = "no-results",
-              h3("No results found"),
-              p("Try searching with a different name.")
-          )
-        } else {
-          div(class = "no-results",
-              h3("Select Player 2"),
-              p("Enter a pitcher's name in the search box above.")
-          )
+
+      if (input$filter_toggle2 == "P3") {
+        df <- p3_filtered_data2()
+        if (is.null(df) || nrow(df) == 0) {
+          return(div(class = "no-results",
+                     h3("Select Player 2"),
+                     p("Enter a P3 pitcher's name in the search box above.")))
         }
-      } else {
-        data <- player2_data()
-        player_name <- unique(data$formatted_name)[1]
-        
+        pitch_count <- nrow(df)
+        player_name <- input$player2_search
         tagList(
           div(class = "results-header",
               h2(player_name, class = "player-name"),
               span(class = "pitch-count",
-                   textOutput(ns("pitch_count2"), inline = TRUE))
+                   paste(pitch_count, "pitches"))
           ),
-          uiOutput(ns("season_summary_ui2")),
-          uiOutput(ns("game_summary_ui2")),
-          uiOutput(ns("game_logs_ui2")),
-          uiOutput(ns("season_stats_ui2"))
+          div(class = "plot-row",
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("p3_movement_plot2"), height = "300px")),
+              div(class = "stuffplus-plot-wrapper", plotOutput(ns("p3_location_plot2"), height = "300px"))
+          ),
+          div(class = "data-table-container", DTOutput(ns("p3_table2")))
         )
+      } else {
+        if (is.null(player2_data())) {
+          if (!is.null(input$player2_search) && nchar(input$player2_search) > 0) {
+            div(class = "no-results",
+                h3("No results found"),
+                p("Try searching with a different name.")
+            )
+          } else {
+            div(class = "no-results",
+                h3("Select Player 2"),
+                p("Enter a pitcher's name in the search box above.")
+            )
+          }
+        } else {
+          data <- player2_data()
+          player_name <- unique(data$formatted_name)[1]
+
+          tagList(
+            div(class = "results-header",
+                h2(player_name, class = "player-name"),
+                span(class = "pitch-count",
+                     textOutput(ns("pitch_count2"), inline = TRUE))
+            ),
+            uiOutput(ns("season_summary_ui2")),
+            uiOutput(ns("game_summary_ui2")),
+            uiOutput(ns("game_logs_ui2")),
+            uiOutput(ns("season_stats_ui2"))
+          )
+        }
       }
     })
     
@@ -767,6 +894,48 @@ stuffPlusServer <- function(id) {
         )
       )
     })
+
+    output$p3_date_filter_ui1 <- renderUI({
+      req(p3_data)
+      ns <- session$ns
+      df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      }
+      dates <- sort(unique(as.Date(df$date)))
+      pickerInput(
+        inputId = ns("p3_date_filter1"),
+        label = NULL,
+        choices = dates,
+        selected = NULL,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          size = 10
+        )
+      )
+    })
+
+    output$p3_pitch_filter_ui1 <- renderUI({
+      req(p3_data)
+      ns <- session$ns
+      df <- p3_data
+      if (!is.null(input$player1_search) && input$player1_search != "") {
+        df <- df %>% filter(grepl(input$player1_search, formatted_name, ignore.case = TRUE))
+      }
+      types <- sort(unique(df$pitch_type))
+      pickerInput(
+        inputId = ns("p3_pitch_filter1"),
+        label = NULL,
+        choices = types,
+        selected = types,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          size = 6
+        )
+      )
+    })
     
     # ---- 7. Filter UIs for Player 2 ---------------------------------
     output$year_filter_ui2 <- renderUI({
@@ -815,6 +984,48 @@ stuffPlusServer <- function(id) {
           size = 10,
           `live-search` = TRUE,
           `none-selected-text` = "Select games"
+        )
+      )
+    })
+
+    output$p3_date_filter_ui2 <- renderUI({
+      req(p3_data)
+      ns <- session$ns
+      df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      }
+      dates <- sort(unique(as.Date(df$date)))
+      pickerInput(
+        inputId = ns("p3_date_filter2"),
+        label = NULL,
+        choices = dates,
+        selected = NULL,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          size = 10
+        )
+      )
+    })
+
+    output$p3_pitch_filter_ui2 <- renderUI({
+      req(p3_data)
+      ns <- session$ns
+      df <- p3_data
+      if (!is.null(input$player2_search) && input$player2_search != "") {
+        df <- df %>% filter(grepl(input$player2_search, formatted_name, ignore.case = TRUE))
+      }
+      types <- sort(unique(df$pitch_type))
+      pickerInput(
+        inputId = ns("p3_pitch_filter2"),
+        label = NULL,
+        choices = types,
+        selected = types,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          size = 6
         )
       )
     })
@@ -1370,6 +1581,76 @@ stuffPlusServer <- function(id) {
           plot.background = element_rect(fill = "white", color = NA)
         )
     }
+
+    # ---- 11f. P3 movement plot ------------------------------------
+    create_p3_movement_plot <- function(df) {
+      if (is.null(df) || nrow(df) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No data available",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Movement"))
+      }
+      ggplot(df, aes(x = pfx_x, y = pfx_z, color = pitch_type)) +
+        geom_point(alpha = 0.7, size = 1.5) +
+        geom_hline(yintercept = 0, color = "black", linewidth = 0.5) +
+        geom_vline(xintercept = 0, color = "black", linewidth = 0.5) +
+        scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        labs(title = "Pitch Movement", x = "Horizontal Break (in)",
+             y = "Induced Vertical Break (in)") +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          legend.position = "none"
+        )
+    }
+
+    create_p3_location_plot <- function(df) {
+      if (is.null(df) || nrow(df) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No data available",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Location"))
+      }
+      ggplot(df, aes(x = plate_x, y = plate_z, color = pitch_type)) +
+        geom_point(alpha = 0.7, size = 1.5) +
+        geom_rect(xmin = -0.83, xmax = 0.83, ymin = 1.5, ymax = 3.5,
+                  colour = "black", fill = NA, linewidth = 0.5) +
+        coord_fixed(xlim = c(-3, 3), ylim = c(0, 5)) +
+        scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        labs(title = "Pitch Location (Catcher's View)",
+             x = "Plate X (ft)", y = "Plate Z (ft)") +
+        theme_minimal(base_size = 11) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
+          legend.position = "none"
+        )
+    }
+
+    create_p3_summary_table <- function(df) {
+      if (is.null(df) || nrow(df) == 0) return(NULL)
+      summary_data <- df %>%
+        group_by(pitch_type) %>%
+        summarise(
+          Count = n(),
+          Velo = round(mean(release_speed, na.rm = TRUE), 1),
+          IVB = round(mean(pfx_z, na.rm = TRUE), 1),
+          HB = round(mean(pfx_x, na.rm = TRUE), 1),
+          Spin = round(mean(spin_rate, na.rm = TRUE), 0),
+          Ext = round(mean(extension, na.rm = TRUE), 1),
+          .groups = "drop"
+        ) %>%
+        arrange(desc(Count))
+      datatable(
+        summary_data,
+        options = list(dom = "t", ordering = FALSE),
+        rownames = FALSE
+      ) %>%
+        formatStyle(columns = 1:ncol(summary_data), fontSize = '9px')
+    }
     
     # ---- 11aa. Format API tables ------------------------------------
     prepare_game_logs_table <- function(df) {
@@ -1571,6 +1852,31 @@ stuffPlusServer <- function(id) {
     
     output$location_lhb_plot2 <- renderPlot({
       create_pitch_location_plot(get_game_data2(), "L")
+    })
+
+    # P3 outputs
+    output$p3_movement_plot1 <- renderPlot({
+      create_p3_movement_plot(p3_filtered_data1())
+    })
+
+    output$p3_location_plot1 <- renderPlot({
+      create_p3_location_plot(p3_filtered_data1())
+    })
+
+    output$p3_table1 <- renderDT({
+      create_p3_summary_table(p3_filtered_data1())
+    })
+
+    output$p3_movement_plot2 <- renderPlot({
+      create_p3_movement_plot(p3_filtered_data2())
+    })
+
+    output$p3_location_plot2 <- renderPlot({
+      create_p3_location_plot(p3_filtered_data2())
+    })
+
+    output$p3_table2 <- renderDT({
+      create_p3_summary_table(p3_filtered_data2())
     })
     
     # ---- 13. Summary UIs ---------------------------------------------
