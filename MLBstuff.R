@@ -572,7 +572,7 @@ stuffPlusServer <- function(id) {
     if (!is.null(p3_data_raw)) {
       p3_data <- p3_data_raw %>%
         mutate(
-          date = as.Date(date),
+          date = as.Date(time),
           pfx_x = as.numeric(pfx_x_inches),
           pfx_z = as.numeric(pfx_z_inches),
           plate_x = as.numeric(plate_location_side),
