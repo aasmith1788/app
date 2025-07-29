@@ -186,6 +186,9 @@ calculate_fastball_features <- function(df) {
   df_fastballs <- df %>%
     filter(pitch_type %in% fastball_types) %>%
     group_by(firstname, lastname, date, pitch_type) %>%
+    # Only keep pitches thrown at 95% or more of that outing's max velocity
+    mutate(max_vel = max(release_speed, na.rm = TRUE)) %>%
+    filter(release_speed >= 0.95 * max_vel) %>%
     summarise(
       avg_fastball_speed = mean(release_speed, na.rm = TRUE),
       avg_fastball_pfx_z = mean(pfx_z_inches, na.rm = TRUE),
