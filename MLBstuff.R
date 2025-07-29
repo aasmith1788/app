@@ -840,21 +840,35 @@ stuffPlusServer <- function(id) {
     # ---- P3 Filter UIs for Player 1 ---------------------------------
     output$p3_filters_ui1 <- renderUI({
       ns <- session$ns
-      tagList(
-        radioGroupButtons(
-          inputId = ns("p3_date_mode1"),
-          label = NULL,
-          choices = c("All Outings", "By Date"),
-          selected = "All Outings",
-          justified = TRUE,
-          individual = TRUE,
-          status = "primary"
-        ),
-        conditionalPanel(
-          condition = sprintf("input['%s'] === 'By Date'", ns('p3_date_mode1')),
-          uiOutput(ns("p3_date_picker_ui1")),
-          uiOutput(ns("p3_pitch_type_ui1"))
-        )
+      div(class = "filter-section",
+          span("P3 Analysis", class = "filter-title"),
+          div(class = "filter-grid",
+              div(class = "filter-item",
+                  span(class = "filter-label", "Outings:"),
+                  radioGroupButtons(
+                    inputId = ns("p3_date_mode1"),
+                    label = NULL,
+                    choices = c("All Outings", "By Date"),
+                    selected = "All Outings",
+                    justified = TRUE,
+                    individual = TRUE,
+                    status = "primary"
+                  )
+              ),
+              conditionalPanel(
+                condition = sprintf("input['%s'] === 'By Date'", ns('p3_date_mode1')),
+                tagList(
+                  div(class = "filter-item",
+                      span(class = "filter-label", "Date:"),
+                      uiOutput(ns("p3_date_picker_ui1"))
+                  ),
+                  div(class = "filter-item",
+                      span(class = "filter-label", "Pitch Types:"),
+                      uiOutput(ns("p3_pitch_type_ui1"))
+                  )
+                )
+              )
+          )
       )
     })
 
@@ -980,21 +994,35 @@ stuffPlusServer <- function(id) {
     # ---- P3 Filter UIs for Player 2 ---------------------------------
     output$p3_filters_ui2 <- renderUI({
       ns <- session$ns
-      tagList(
-        radioGroupButtons(
-          inputId = ns("p3_date_mode2"),
-          label = NULL,
-          choices = c("All Outings", "By Date"),
-          selected = "All Outings",
-          justified = TRUE,
-          individual = TRUE,
-          status = "primary"
-        ),
-        conditionalPanel(
-          condition = sprintf("input['%s'] === 'By Date'", ns('p3_date_mode2')),
-          uiOutput(ns("p3_date_picker_ui2")),
-          uiOutput(ns("p3_pitch_type_ui2"))
-        )
+      div(class = "filter-section",
+          span("P3 Analysis", class = "filter-title"),
+          div(class = "filter-grid",
+              div(class = "filter-item",
+                  span(class = "filter-label", "Outings:"),
+                  radioGroupButtons(
+                    inputId = ns("p3_date_mode2"),
+                    label = NULL,
+                    choices = c("All Outings", "By Date"),
+                    selected = "All Outings",
+                    justified = TRUE,
+                    individual = TRUE,
+                    status = "primary"
+                  )
+              ),
+              conditionalPanel(
+                condition = sprintf("input['%s'] === 'By Date'", ns('p3_date_mode2')),
+                tagList(
+                  div(class = "filter-item",
+                      span(class = "filter-label", "Date:"),
+                      uiOutput(ns("p3_date_picker_ui2"))
+                  ),
+                  div(class = "filter-item",
+                      span(class = "filter-label", "Pitch Types:"),
+                      uiOutput(ns("p3_pitch_type_ui2"))
+                  )
+                )
+              )
+          )
       )
     })
 
