@@ -575,10 +575,7 @@ stuffPlusServer <- function(id) {
     p3_raw <- read_sheet(p3_sheet_id, sheet = "Stuff Plus")
     p3_data_all <- p3_raw %>%
       mutate(
-        date = coalesce(
-          as.Date(as.numeric(date), origin = "1899-12-30"),
-          as_date(date)
-        ),
+        date = as_date(ymd_hms(date)),
         formatted_name = paste(firstname, lastname),
         game_date = date,
         game_date_formatted = format(date, "%b %d, %Y"),
