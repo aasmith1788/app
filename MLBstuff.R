@@ -12,7 +12,6 @@ library(jsonlite)
 library(glue)
 library(purrr)
 library(googlesheets4)
-library(lubridate)
 
 # ----------  UI -------------------------------------------------------
 stuffPlusUI <- function(id) {
@@ -575,7 +574,7 @@ stuffPlusServer <- function(id) {
     p3_raw <- read_sheet(p3_sheet_id, sheet = "Stuff Plus")
     p3_data_all <- p3_raw %>%
       mutate(
-        date = as_date(ymd_hms(date)),
+        date = as.Date(date),
         formatted_name = paste(firstname, lastname),
         game_date = date,
         game_date_formatted = format(date, "%b %d, %Y"),
