@@ -2,7 +2,7 @@
 library(shiny)
 
 # 1) Load your module file
-source("C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/StuffApp/Modules/MLBstuff.R")
+source("MLBstuff.R")
 
 # 2) Define UI
 ui <- fluidPage(
