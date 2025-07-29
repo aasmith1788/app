@@ -88,7 +88,7 @@ map_columns_to_features <- function(df) {
   
   # Join handedness back to main dataframe
   df <- df %>%
-    left_join(pitcher_handedness %>% select(firstname, lastname, p_throws), 
+    left_join(pitcher_handedness %>% select(firstname, lastname, p_throws),
               by = c("firstname", "lastname"))
   
   # STEP 2: Create mapping with proper sign convention fixes
@@ -100,9 +100,10 @@ map_columns_to_features <- function(df) {
       release_extension = extension,
       release_pos_z = release_height,
       
-      # CRITICAL FIX 1: Flip sign convention to match training data
-      # Simply multiply horizontal values by -1 for everyone
-      release_pos_x_raw = -release_side,  # Flip horizontal release sign
+      # CRITICAL FIX 1: Flip sign convention once for everyone
+      # These "_base" columns store the sign-flipped values
+      release_pos_x_base = -release_side,
+      pfx_x_inches_base = -horizontal_break,
       
       # Keep vertical break as is
       induced_vertical_break = induced_vertical_break, # Already in inches (no sign flip needed)
@@ -126,20 +127,19 @@ map_columns_to_features <- function(df) {
       # Create pitcher name
       pitcher_name = paste(firstname, lastname, sep = " ")
     ) %>%
-    # STEP 3: Simple sign flip - multiply horizontal values by -1 for everyone
+    # STEP 3: Mirror left-handed pitchers for model input only
     mutate(
-      # Just flip the sign for horizontal movement and release
-      pfx_x_inches = -horizontal_break,  # Multiply by -1 for everyone
+      # Horizontal movement and release position after initial sign flip
+      pfx_x_inches = ifelse(p_throws == "L", -pfx_x_inches_base, pfx_x_inches_base),
       pfx_z_inches = induced_vertical_break,
-      
-      # For release position, just use the flipped value
-      release_pos_x = release_pos_x_raw,
-      
-      # Update original columns with processed values
-      release_side = release_pos_x,
-      horizontal_break = pfx_x_inches,
-      
-      # Also create the pfx_x and pfx_z variables
+
+      release_pos_x = ifelse(p_throws == "L", -release_pos_x_base, release_pos_x_base),
+
+      # Columns reflecting only the initial sign flip
+      release_side = release_pos_x_base,
+      horizontal_break = pfx_x_inches_base,
+
+      # Convenience columns for later calculations
       pfx_x = pfx_x_inches,
       pfx_z = pfx_z_inches
     )
@@ -185,7 +185,11 @@ calculate_fastball_features <- function(df) {
   # Calculate fastball averages by pitcher and DATE (outing)
   df_fastballs <- df %>%
     filter(pitch_type %in% fastball_types) %>%
-    group_by(firstname, lastname, date, pitch_type) %>%
+    group_by(firstname, lastname, date) %>%
+    # Identify the max fastball velocity for the outing across all fastball types
+    mutate(max_vel = max(release_speed, na.rm = TRUE)) %>%
+    filter(release_speed >= 0.95 * max_vel) %>%
+    group_by(firstname, lastname, date, pitch_type, .add = TRUE) %>%
     summarise(
       avg_fastball_speed = mean(release_speed, na.rm = TRUE),
       avg_fastball_pfx_z = mean(pfx_z_inches, na.rm = TRUE),
@@ -373,18 +377,28 @@ predict_stuff_plus <- function(input_source) {
   
   # Sort back to original order
   all_results <- all_results %>% arrange(original_row_index)
-  
+
   # Verify we have the correct number of rows
   if(nrow(all_results) != original_nrows) {
     stop("FATAL ERROR: Result rows don't match original data rows!")
   }
+
+  # Revert mirrored values so output reflects only the initial sign flip
+  all_results <- all_results %>%
+    mutate(
+      release_pos_x = release_pos_x_base,
+      pfx_x_inches = pfx_x_inches_base,
+      release_side = release_pos_x_base,
+      horizontal_break = pfx_x_inches_base
+    )
   
   # Prepare the final dataset with ALL original columns plus stuff_plus
   # Remove only the temporary processing columns, keep EVERYTHING else
-  columns_to_remove <- c("original_row_index", "prediction_error", 
+  columns_to_remove <- c("original_row_index", "prediction_error",
                          "release_magnitude", "cos_arm_angle", "arm_angle_rad",
                          "pitcher_name",  # This was created for processing
-                         "pfx_x", "pfx_z")  # These are duplicates of pfx_x_inches, pfx_z_inches
+                         "pfx_x", "pfx_z",            # Duplicates of pfx_x_inches, pfx_z_inches
+                         "release_pos_x_base", "pfx_x_inches_base")
   
   final_data <- all_results %>%
     select(-any_of(columns_to_remove))
