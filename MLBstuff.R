@@ -865,7 +865,7 @@ stuffPlusServer <- function(id) {
       req(player1_data())
       req(input$p3_date1)
       ns <- session$ns
-      df <- player1_data() %>% filter(as.Date(date) == input$p3_date1)
+      df <- player1_data() %>% filter(as.Date(date) == as.Date(input$p3_date1))
       choices_df <- df %>%
         group_by(pitch_type) %>%
         summarise(velo = round(mean(as.numeric(release_speed), na.rm = TRUE), 1), .groups = 'drop') %>%
@@ -949,7 +949,7 @@ stuffPlusServer <- function(id) {
       req(player2_data())
       req(input$p3_date2)
       ns <- session$ns
-      df <- player2_data() %>% filter(as.Date(date) == input$p3_date2)
+      df <- player2_data() %>% filter(as.Date(date) == as.Date(input$p3_date2))
       choices_df <- df %>%
         group_by(pitch_type) %>%
         summarise(velo = round(mean(as.numeric(release_speed), na.rm = TRUE), 1), .groups = 'drop') %>%
@@ -1061,7 +1061,7 @@ stuffPlusServer <- function(id) {
       req(player1_data())
       data <- player1_data()
       if (!is.null(input$p3_date1) && input$p3_date1 != "") {
-        data <- data %>% filter(as.Date(date) == input$p3_date1)
+        data <- data %>% filter(as.Date(date) == as.Date(input$p3_date1))
       }
       if (!is.null(input$p3_pitch_types1) && length(input$p3_pitch_types1) > 0) {
         data <- data %>% filter(pitch_type %in% input$p3_pitch_types1)
@@ -1073,7 +1073,7 @@ stuffPlusServer <- function(id) {
       req(player2_data())
       data <- player2_data()
       if (!is.null(input$p3_date2) && input$p3_date2 != "") {
-        data <- data %>% filter(as.Date(date) == input$p3_date2)
+        data <- data %>% filter(as.Date(date) == as.Date(input$p3_date2))
       }
       if (!is.null(input$p3_pitch_types2) && length(input$p3_pitch_types2) > 0) {
         data <- data %>% filter(pitch_type %in% input$p3_pitch_types2)
