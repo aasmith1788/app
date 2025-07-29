@@ -572,7 +572,7 @@ stuffPlusServer <- function(id) {
     p3_date_col <- if ("idate" %in% names(p3_raw)) {
       as.Date(p3_raw$idate)
     } else if ("time" %in% names(p3_raw)) {
-      as.Date(p3_raw$time)
+      as.Date(as.character(p3_raw$time))
     } else if ("date" %in% names(p3_raw)) {
       as.Date(as.numeric(p3_raw$date), origin = "1899-12-30")
     } else {
