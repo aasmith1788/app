@@ -850,7 +850,7 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui1 <- renderUI({
       req(player1_data())
       ns <- session$ns
-      dates <- sort(unique(as.Date(player1_data()$date)))
+      dates <- sort(unique(player1_data()$date))
       pickerInput(
         inputId = ns("p3_date1"),
         label = NULL,
@@ -934,7 +934,7 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui2 <- renderUI({
       req(player2_data())
       ns <- session$ns
-      dates <- sort(unique(as.Date(player2_data()$date)))
+      dates <- sort(unique(player2_data()$date))
       pickerInput(
         inputId = ns("p3_date2"),
         label = NULL,
