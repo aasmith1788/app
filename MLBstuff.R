@@ -77,10 +77,12 @@ stuffPlusUI <- function(id) {
           border-radius: 0;
           box-shadow: none !important;
           padding: 2px 6px;
+          transition: color 0.2s ease, border-color 0.2s ease;
+          cursor: pointer;
         }
         .mode-toggle .btn:hover,
         .mode-toggle .btn:focus {
-          color: #fff;
+          color: #6b7280;
           background: none !important;
           box-shadow: none !important;
         }
@@ -97,25 +99,27 @@ stuffPlusUI <- function(id) {
           display: flex;
           gap: 8px;
           margin-bottom: 16px;
-          background: #000;
+          background: #f8f9fa;
           padding: 12px;
           font-weight: 600;
-          border: 1px solid #333;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .filter-header .btn {
           flex: none;
           background: none !important;
-          color: #fff;
+          color: #4b5563;
           border: none;
           border-radius: 0;
           box-shadow: none !important;
           padding: 2px 6px;
+          transition: color 0.2s ease, border-color 0.2s ease;
+          cursor: pointer;
         }
         .filter-header .btn:hover,
         .filter-header .btn:focus {
-          color: #fff;
+          color: #6b7280;
           background: none !important;
           box-shadow: none !important;
         }
@@ -137,6 +141,11 @@ stuffPlusUI <- function(id) {
           overflow: visible;
           display: flex;
           flex-direction: column;
+          transition: box-shadow 0.2s ease;
+        }
+
+        .player-panel:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .filters {
@@ -149,6 +158,11 @@ stuffPlusUI <- function(id) {
           background: #fafbfc;
           border: 1px solid #e5e7eb;
           padding: 20px;
+          transition: box-shadow 0.2s ease;
+        }
+
+        .filter-section:hover {
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
 
         .filter-title {
@@ -192,24 +206,25 @@ stuffPlusUI <- function(id) {
 
         .selectize-input,
         .picker-input .btn {
-          border: 1px solid #ccc !important;
+          border: 2px solid #ccc !important;
           border-radius: 4px !important;
           padding: 6px 12px !important;
           min-height: 36px !important;
           font-size: 13px !important;
           background: #fff !important;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .selectize-input:hover,
         .picker-input .btn:hover {
-          border-color: #999 !important;
+          border-color: #6b7280 !important;
         }
 
         .selectize-input.focus,
         .picker-input .btn:focus {
-          border-color: #0d6efd !important;
-          box-shadow: 0 0 0 2px rgba(13,110,253,.25) !important;
+          border-color: #4b5563 !important;
+          box-shadow: 0 0 0 2px rgba(75,85,99,0.25) !important;
         }
 
         .player-content {
@@ -238,8 +253,8 @@ stuffPlusUI <- function(id) {
         }
 
         .section-title {
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 18px;
+          font-weight: 700;
           color: #111;
           margin: 0 0 12px 0;
           text-transform: uppercase;
@@ -287,6 +302,10 @@ stuffPlusUI <- function(id) {
           color: #1a1a1a;
           font-size: 9px;
           white-space: nowrap;
+        }
+
+        table.dataTable tbody tr {
+          transition: background-color 0.2s ease;
         }
 
         table.dataTable tbody tr:hover {
