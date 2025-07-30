@@ -36,7 +36,7 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: #FFDE00;
+          background: #000;
           padding: 24px;
           margin-bottom: 20px;
           border: none;
@@ -53,6 +53,7 @@ stuffPlusUI <- function(id) {
           font-weight: 600;
           letter-spacing: 0.5px;
           margin: 0;
+          color: #FFDE00;
         }
 
 
@@ -65,21 +66,21 @@ stuffPlusUI <- function(id) {
         .mode-toggle {
           display: flex;
           gap: 10px;
-          margin-left: 40px;
+          margin-left: 20px;
         }
 
         .mode-toggle .btn {
-          flex: 1;
-          background-color: #FFDE00;
-          color: #000;
+          flex: none;
+          background: transparent;
+          color: #ccc;
           border: none;
           border-radius: 0;
           box-shadow: none;
-          transition: all 0.2s ease;
+          padding: 4px 8px;
         }
         .mode-toggle .btn.active {
-          text-decoration: underline;
-          font-weight: 600;
+          color: #FFDE00;
+          border-bottom: 2px solid #FFDE00;
         }
 
         .filter-header {
@@ -301,9 +302,9 @@ stuffPlusUI <- function(id) {
                   label = NULL,
                   choices = c("Single Athlete" = "single", "Two Athletes" = "two"),
                   selected = "two",
-                  justified = TRUE,
+                  justified = FALSE,
                   individual = TRUE,
-                  status = "primary"
+                  status = "default"
                 )
             )
         ),
