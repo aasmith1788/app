@@ -36,18 +36,24 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: linear-gradient(135deg, #e0e4ec, #f5f7fa);
+          background: #000;
+          color: #FFDE00;
           padding: 24px;
           margin-bottom: 20px;
-          border-radius: 8px;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
+          align-items: center;
+          gap: 20px;
         }
 
         .page-title {
           font-size: 28px;
-          font-weight: 700;
-          margin: 0 0 16px 0;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          margin: 0;
         }
 
 
@@ -59,12 +65,21 @@ stuffPlusUI <- function(id) {
 
         .mode-toggle {
           display: flex;
-          gap: 10px;
-          height: 100%;
+          gap: 20px;
+          margin-left: 20px;
         }
 
         .mode-toggle .btn {
-          flex: 1;
+          background: none;
+          color: #eee;
+          border: none;
+          border-radius: 0;
+          padding: 0 8px;
+          box-shadow: none;
+        }
+        .mode-toggle .btn.active {
+          color: #FFDE00;
+          border-bottom: 2px solid #FFDE00;
         }
 
         .filter-header {
@@ -279,16 +294,16 @@ stuffPlusUI <- function(id) {
     div(class = "main-container",
         # Header
         div(class = "header-section",
-            h1("MLB Stuff Plus Analytics - Player Comparison", class = "page-title"),
+            h1("P3 Pitch Modeling", class = "page-title"),
             div(class = "mode-toggle",
                 radioGroupButtons(
                   inputId = ns("player_mode"),
                   label = NULL,
                   choices = c("Single Athlete" = "single", "Two Athletes" = "two"),
                   selected = "two",
-                  justified = TRUE,
+                  justified = FALSE,
                   individual = TRUE,
-                  status = "primary"
+                  status = NULL
                 )
             )
         ),
@@ -356,20 +371,21 @@ stuffPlusUI <- function(id) {
                     conditionalPanel(
                       condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle1')),
                       div(class = "filter-section",
-                          span("Outing Filter", class = "filter-title"),
-                          radioGroupButtons(
-                            inputId = ns("p3_date_mode1"),
-                            label = NULL,
-                            choices = c("All Outings" = "all", "By Date" = "bydate"),
-                            selected = "all",
-                            justified = TRUE,
-                            individual = TRUE,
-                            status = "primary"
-                          ),
-                          conditionalPanel(
-                            condition = sprintf("input['%s'] === 'bydate'", ns('p3_date_mode1')),
-                            uiOutput(ns("p3_date_picker_ui1")),
-                            uiOutput(ns("p3_pitch_type_ui1"))
+                          span("Date", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Date:"),
+                                  uiOutput(ns("p3_date_picker_ui1"))
+                              )
+                          )
+                      ),
+                      div(class = "filter-section",
+                          span("Pitch Filter", class = "filter-title"),
+                          div(class = "filter-grid",
+                              div(class = "filter-item",
+                                  span(class = "filter-label", "Pitches:"),
+                                  uiOutput(ns("p3_pitch_type_ui1"))
+                              )
                           )
                       )
                     )
@@ -440,22 +456,23 @@ stuffPlusUI <- function(id) {
                         )
                       ),
                       conditionalPanel(
-                        condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
+                      condition = sprintf("input['%s'] === 'P3'", ns('filter_toggle2')),
                         div(class = "filter-section",
-                            span("Outing Filter", class = "filter-title"),
-                            radioGroupButtons(
-                              inputId = ns("p3_date_mode2"),
-                              label = NULL,
-                              choices = c("All Outings" = "all", "By Date" = "bydate"),
-                              selected = "all",
-                              justified = TRUE,
-                              individual = TRUE,
-                              status = "primary"
-                            ),
-                            conditionalPanel(
-                              condition = sprintf("input['%s'] === 'bydate'", ns('p3_date_mode2')),
-                              uiOutput(ns("p3_date_picker_ui2")),
-                              uiOutput(ns("p3_pitch_type_ui2"))
+                            span("Date", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Date:"),
+                                    uiOutput(ns("p3_date_picker_ui2"))
+                                )
+                            )
+                        ),
+                        div(class = "filter-section",
+                            span("Pitch Filter", class = "filter-title"),
+                            div(class = "filter-grid",
+                                div(class = "filter-item",
+                                    span(class = "filter-label", "Pitches:"),
+                                    uiOutput(ns("p3_pitch_type_ui2"))
+                                )
                             )
                         )
                       )
@@ -572,7 +589,8 @@ stuffPlusServer <- function(id) {
     p3_raw <- read_sheet(p3_sheet_id, sheet = "Stuff Plus")
     p3_data_all <- p3_raw %>%
       mutate(
-        date = as.Date(as.numeric(date), origin = "1899-12-30"),
+        pitch_id = row_number(),
+        date = as.Date(date),
         formatted_name = paste(firstname, lastname),
         game_date = date,
         game_date_formatted = format(date, "%b %d, %Y"),
@@ -847,30 +865,44 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui1 <- renderUI({
       req(player1_data())
       ns <- session$ns
-      dates <- sort(unique(player1_data()$date))
+      dates <- player1_data() %>%
+        select(date) %>%
+        distinct() %>%
+        arrange(desc(date))
+
       pickerInput(
         inputId = ns("p3_dates1"),
         label = NULL,
-        choices = dates,
+        choices = setNames(dates$date, format(dates$date, "%b %d, %Y")),
         selected = NULL,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = FALSE,
+          `selected-text-format` = "count > 2",
+          `count-selected-text` = "{0} games",
+          size = 10,
+          `live-search` = TRUE,
+          `none-selected-text` = "Select games"
+        )
+      )
+    })
+
+    output$p3_pitch_type_ui1 <- renderUI({
+      req(player1_data())
+      req(input$p3_dates1)
+      ns <- session$ns
+      df <- player1_data() %>%
+        filter(as.Date(date) %in% as.Date(input$p3_dates1)) %>%
+        mutate(label = paste0(row_number(), "# ", pitch_type, " ",
+                              round(as.numeric(release_speed), 1)))
+      pickerInput(
+        inputId = ns("p3_pitch_ids1"),
+        label = NULL,
+        choices = setNames(df$pitch_id, df$label),
+        selected = df$pitch_id,
         multiple = TRUE,
         options = list(`actions-box` = TRUE, size = 10)
       )
-    })
-    
-    output$p3_pitch_type_ui1 <- renderUI({
-      req(player1_data())
-      req(input$p3_date_mode1 == "bydate")
-      req(input$p3_dates1)
-      ns <- session$ns
-      lapply(input$p3_dates1, function(d) {
-        choices <- sort(unique(player1_data() %>% filter(date == d) %>% pull(pitch_type)))
-        checkboxGroupInput(ns(paste0("p3_pitch_types1_", gsub("-", "", d))),
-                           label = format(as.Date(d), "%b %d, %Y"),
-                           choices = choices,
-                           selected = choices,
-                           inline = TRUE)
-      })
     })
     
     # ---- 7. Filter UIs for Player 2 ---------------------------------
@@ -927,30 +959,44 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui2 <- renderUI({
       req(player2_data())
       ns <- session$ns
-      dates <- sort(unique(player2_data()$date))
+      dates <- player2_data() %>%
+        select(date) %>%
+        distinct() %>%
+        arrange(desc(date))
+
       pickerInput(
         inputId = ns("p3_dates2"),
         label = NULL,
-        choices = dates,
+        choices = setNames(dates$date, format(dates$date, "%b %d, %Y")),
         selected = NULL,
+        multiple = TRUE,
+        options = list(
+          `actions-box` = FALSE,
+          `selected-text-format` = "count > 2",
+          `count-selected-text` = "{0} games",
+          size = 10,
+          `live-search` = TRUE,
+          `none-selected-text` = "Select games"
+        )
+      )
+    })
+
+    output$p3_pitch_type_ui2 <- renderUI({
+      req(player2_data())
+      req(input$p3_dates2)
+      ns <- session$ns
+      df <- player2_data() %>%
+        filter(as.Date(date) %in% as.Date(input$p3_dates2)) %>%
+        mutate(label = paste0(row_number(), "# ", pitch_type, " ",
+                              round(as.numeric(release_speed), 1)))
+      pickerInput(
+        inputId = ns("p3_pitch_ids2"),
+        label = NULL,
+        choices = setNames(df$pitch_id, df$label),
+        selected = df$pitch_id,
         multiple = TRUE,
         options = list(`actions-box` = TRUE, size = 10)
       )
-    })
-    
-    output$p3_pitch_type_ui2 <- renderUI({
-      req(player2_data())
-      req(input$p3_date_mode2 == "bydate")
-      req(input$p3_dates2)
-      ns <- session$ns
-      lapply(input$p3_dates2, function(d) {
-        choices <- sort(unique(player2_data() %>% filter(date == d) %>% pull(pitch_type)))
-        checkboxGroupInput(ns(paste0("p3_pitch_types2_", gsub("-", "", d))),
-                           label = format(as.Date(d), "%b %d, %Y"),
-                           choices = choices,
-                           selected = choices,
-                           inline = TRUE)
-      })
     })
     
     
@@ -1049,17 +1095,11 @@ stuffPlusServer <- function(id) {
     get_p3_filtered_data1 <- reactive({
       req(player1_data())
       data <- player1_data()
-      if (input$p3_date_mode1 == "bydate") {
-        req(input$p3_dates1)
-        data <- data %>% filter(date %in% input$p3_dates1)
-        data <- bind_rows(lapply(input$p3_dates1, function(d) {
-          types <- input[[paste0("p3_pitch_types1_", gsub("-", "", d))]]
-          if (!is.null(types)) {
-            data %>% filter(date == d, pitch_type %in% types)
-          } else {
-            data %>% filter(date == d)
-          }
-        }))
+      if (!is.null(input$p3_dates1) && length(input$p3_dates1) > 0) {
+        data <- data %>% filter(as.Date(date) %in% as.Date(input$p3_dates1))
+      }
+      if (!is.null(input$p3_pitch_ids1) && length(input$p3_pitch_ids1) > 0) {
+        data <- data %>% filter(pitch_id %in% input$p3_pitch_ids1)
       }
       data
     })
@@ -1067,17 +1107,11 @@ stuffPlusServer <- function(id) {
     get_p3_filtered_data2 <- reactive({
       req(player2_data())
       data <- player2_data()
-      if (input$p3_date_mode2 == "bydate") {
-        req(input$p3_dates2)
-        data <- data %>% filter(date %in% input$p3_dates2)
-        data <- bind_rows(lapply(input$p3_dates2, function(d) {
-          types <- input[[paste0("p3_pitch_types2_", gsub("-", "", d))]]
-          if (!is.null(types)) {
-            data %>% filter(date == d, pitch_type %in% types)
-          } else {
-            data %>% filter(date == d)
-          }
-        }))
+      if (!is.null(input$p3_dates2) && length(input$p3_dates2) > 0) {
+        data <- data %>% filter(as.Date(date) %in% as.Date(input$p3_dates2))
+      }
+      if (!is.null(input$p3_pitch_ids2) && length(input$p3_pitch_ids2) > 0) {
+        data <- data %>% filter(pitch_id %in% input$p3_pitch_ids2)
       }
       data
     })
