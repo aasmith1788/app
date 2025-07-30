@@ -36,21 +36,23 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: linear-gradient(135deg, #FFDE00 0%, #F59E0B 100%);
+          background: #FFDE00;
           padding: 24px;
           margin-bottom: 20px;
-          border-radius: 12px;
           border: none;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border-radius: 0;
+          box-shadow: none;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
+          align-items: center;
+          gap: 20px;
         }
 
         .page-title {
           font-size: 28px;
           font-weight: 600;
           letter-spacing: 0.5px;
-          margin: 0 0 16px 0;
+          margin: 0;
         }
 
 
@@ -63,19 +65,21 @@ stuffPlusUI <- function(id) {
         .mode-toggle {
           display: flex;
           gap: 10px;
-          height: 100%;
+          margin-left: 40px;
         }
 
         .mode-toggle .btn {
           flex: 1;
-          background-color: #fff;
+          background-color: #FFDE00;
           color: #000;
-          border: 1px solid rgba(0,0,0,0.2);
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
           transition: all 0.2s ease;
         }
         .mode-toggle .btn.active {
-          background-color: #000;
-          color: #fff;
+          text-decoration: underline;
+          font-weight: 600;
         }
 
         .filter-header {
