@@ -97,16 +97,17 @@ stuffPlusUI <- function(id) {
           display: flex;
           gap: 8px;
           margin-bottom: 16px;
-          background: #f8f9fa;
-          padding: 16px;
+          background: #000;
+          padding: 12px;
           font-weight: 600;
-          border-bottom: 1px solid #e5e7eb;
+          border: 1px solid #333;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         .filter-header .btn {
           flex: none;
           background: none !important;
-          color: #000;
+          color: #fff;
           border: none;
           border-radius: 0;
           box-shadow: none !important;
@@ -114,7 +115,7 @@ stuffPlusUI <- function(id) {
         }
         .filter-header .btn:hover,
         .filter-header .btn:focus {
-          color: #000;
+          color: #fff;
           background: none !important;
           box-shadow: none !important;
         }
