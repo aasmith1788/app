@@ -574,6 +574,7 @@ stuffPlusServer <- function(id) {
     p3_raw <- read_sheet(p3_sheet_id, sheet = "Stuff Plus")
     p3_data_all <- p3_raw %>%
       mutate(
+        pitch_id = row_number(),
         date = as.Date(date),
         formatted_name = paste(firstname, lastname),
         game_date = date,
@@ -851,29 +852,35 @@ stuffPlusServer <- function(id) {
       ns <- session$ns
       dates <- sort(unique(player1_data()$date))
       pickerInput(
-        inputId = ns("p3_date1"),
+        inputId = ns("p3_dates1"),
         label = NULL,
         choices = dates,
         selected = NULL,
-        multiple = FALSE,
-        options = list(`live-search` = TRUE, size = 10)
+        multiple = TRUE,
+        options = list(
+          `actions-box` = FALSE,
+          `selected-text-format` = "count > 2",
+          `count-selected-text` = "{0} games",
+          size = 10,
+          `live-search` = TRUE,
+          `none-selected-text` = "Select games"
+        )
       )
     })
 
     output$p3_pitch_type_ui1 <- renderUI({
       req(player1_data())
-      req(input$p3_date1)
+      req(input$p3_dates1)
       ns <- session$ns
-      df <- player1_data() %>% filter(as.Date(date) == as.Date(input$p3_date1))
-      choices_df <- df %>%
-        group_by(pitch_type) %>%
-        summarise(velo = round(mean(as.numeric(release_speed), na.rm = TRUE), 1), .groups = 'drop') %>%
-        mutate(label = paste0(row_number(), "# ", pitch_type, " ", velo))
+      df <- player1_data() %>%
+        filter(as.Date(date) %in% as.Date(input$p3_dates1)) %>%
+        mutate(label = paste0(row_number(), "# ", pitch_type, " ",
+                              round(as.numeric(release_speed), 1)))
       pickerInput(
-        inputId = ns("p3_pitch_types1"),
+        inputId = ns("p3_pitch_ids1"),
         label = NULL,
-        choices = setNames(choices_df$pitch_type, choices_df$label),
-        selected = choices_df$pitch_type,
+        choices = setNames(df$pitch_id, df$label),
+        selected = df$pitch_id,
         multiple = TRUE,
         options = list(`actions-box` = TRUE, size = 10)
       )
@@ -935,29 +942,35 @@ stuffPlusServer <- function(id) {
       ns <- session$ns
       dates <- sort(unique(player2_data()$date))
       pickerInput(
-        inputId = ns("p3_date2"),
+        inputId = ns("p3_dates2"),
         label = NULL,
         choices = dates,
         selected = NULL,
-        multiple = FALSE,
-        options = list(`live-search` = TRUE, size = 10)
+        multiple = TRUE,
+        options = list(
+          `actions-box` = FALSE,
+          `selected-text-format` = "count > 2",
+          `count-selected-text` = "{0} games",
+          size = 10,
+          `live-search` = TRUE,
+          `none-selected-text` = "Select games"
+        )
       )
     })
 
     output$p3_pitch_type_ui2 <- renderUI({
       req(player2_data())
-      req(input$p3_date2)
+      req(input$p3_dates2)
       ns <- session$ns
-      df <- player2_data() %>% filter(as.Date(date) == as.Date(input$p3_date2))
-      choices_df <- df %>%
-        group_by(pitch_type) %>%
-        summarise(velo = round(mean(as.numeric(release_speed), na.rm = TRUE), 1), .groups = 'drop') %>%
-        mutate(label = paste0(row_number(), "# ", pitch_type, " ", velo))
+      df <- player2_data() %>%
+        filter(as.Date(date) %in% as.Date(input$p3_dates2)) %>%
+        mutate(label = paste0(row_number(), "# ", pitch_type, " ",
+                              round(as.numeric(release_speed), 1)))
       pickerInput(
-        inputId = ns("p3_pitch_types2"),
+        inputId = ns("p3_pitch_ids2"),
         label = NULL,
-        choices = setNames(choices_df$pitch_type, choices_df$label),
-        selected = choices_df$pitch_type,
+        choices = setNames(df$pitch_id, df$label),
+        selected = df$pitch_id,
         multiple = TRUE,
         options = list(`actions-box` = TRUE, size = 10)
       )
@@ -1059,11 +1072,11 @@ stuffPlusServer <- function(id) {
     get_p3_filtered_data1 <- reactive({
       req(player1_data())
       data <- player1_data()
-      if (!is.null(input$p3_date1) && input$p3_date1 != "") {
-        data <- data %>% filter(as.Date(date) == as.Date(input$p3_date1))
+      if (!is.null(input$p3_dates1) && length(input$p3_dates1) > 0) {
+        data <- data %>% filter(as.Date(date) %in% as.Date(input$p3_dates1))
       }
-      if (!is.null(input$p3_pitch_types1) && length(input$p3_pitch_types1) > 0) {
-        data <- data %>% filter(pitch_type %in% input$p3_pitch_types1)
+      if (!is.null(input$p3_pitch_ids1) && length(input$p3_pitch_ids1) > 0) {
+        data <- data %>% filter(pitch_id %in% input$p3_pitch_ids1)
       }
       data
     })
@@ -1071,11 +1084,11 @@ stuffPlusServer <- function(id) {
     get_p3_filtered_data2 <- reactive({
       req(player2_data())
       data <- player2_data()
-      if (!is.null(input$p3_date2) && input$p3_date2 != "") {
-        data <- data %>% filter(as.Date(date) == as.Date(input$p3_date2))
+      if (!is.null(input$p3_dates2) && length(input$p3_dates2) > 0) {
+        data <- data %>% filter(as.Date(date) %in% as.Date(input$p3_dates2))
       }
-      if (!is.null(input$p3_pitch_types2) && length(input$p3_pitch_types2) > 0) {
-        data <- data %>% filter(pitch_type %in% input$p3_pitch_types2)
+      if (!is.null(input$p3_pitch_ids2) && length(input$p3_pitch_ids2) > 0) {
+        data <- data %>% filter(pitch_id %in% input$p3_pitch_ids2)
       }
       data
     })
