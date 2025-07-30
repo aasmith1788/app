@@ -281,6 +281,7 @@ stuffPlusUI <- function(id) {
           font-size: 9px;
           border-collapse: collapse;
           width: 100%;
+          table-layout: auto;
         }
 
         table.dataTable thead th {
@@ -301,7 +302,8 @@ stuffPlusUI <- function(id) {
           text-align: center;
           color: #1a1a1a;
           font-size: 9px;
-          white-space: nowrap;
+          white-space: normal;
+          word-wrap: break-word;
         }
 
         table.dataTable tbody tr {
@@ -1318,12 +1320,14 @@ stuffPlusServer <- function(id) {
         options = list(
           dom = "t",
           ordering = FALSE,
+          autoWidth = TRUE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
-            list(width = "20px", targets = 0),  # Type
-            list(width = "33px", targets = 1),  # Count
-            list(width = "24px", targets = c(2:8)),  # Stats
-            list(width = "28px", targets = c(9:12))  # Percentages
+            list(width = "8%", targets = 0),
+            list(width = "8%", targets = 1),
+            list(width = "7%", targets = c(2:8)),
+            list(width = "8%", targets = 9),
+            list(width = "9%", targets = c(10:12))
           )
         ),
         rownames = FALSE,
@@ -1711,6 +1715,7 @@ stuffPlusServer <- function(id) {
           ordering = FALSE,
           paging = FALSE,
           pageLength = nrow(df),
+          autoWidth = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
@@ -1741,6 +1746,7 @@ stuffPlusServer <- function(id) {
           dom = "t",
           ordering = FALSE,
           pageLength = 10,
+          autoWidth = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
