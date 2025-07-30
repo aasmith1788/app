@@ -95,12 +95,32 @@ stuffPlusUI <- function(id) {
 
         .filter-header {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           margin-bottom: 16px;
         }
 
         .filter-header .btn {
-          flex: 1;
+          flex: none;
+          background: none !important;
+          color: #fff;
+          border: none;
+          border-radius: 0;
+          box-shadow: none !important;
+          padding: 2px 6px;
+        }
+        .filter-header .btn:hover,
+        .filter-header .btn:focus {
+          color: #fff;
+          background: none !important;
+          box-shadow: none !important;
+        }
+        .filter-header .btn.active,
+        .filter-header .btn.active:hover,
+        .filter-header .btn.active:focus {
+          color: #FFDE00;
+          background: none !important;
+          box-shadow: none !important;
+          border-bottom: 2px solid #FFDE00;
         }
 
         .player-panel {
@@ -330,9 +350,9 @@ stuffPlusUI <- function(id) {
                           label = NULL,
                           choices = c("MLB", "P3"),
                           selected = "MLB",
-                          justified = TRUE,
+                          justified = FALSE,
                           individual = TRUE,
-                          status = "primary"
+                          status = "default"
                         )
                     ),
                     selectizeInput(ns("player1_search"), label = NULL,
@@ -417,9 +437,9 @@ stuffPlusUI <- function(id) {
                             label = NULL,
                             choices = c("MLB", "P3"),
                             selected = "MLB",
-                            justified = TRUE,
+                            justified = FALSE,
                             individual = TRUE,
-                            status = "primary"
+                            status = "default"
                           )
                       ),
                       selectizeInput(ns("player2_search"), label = NULL,
