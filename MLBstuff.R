@@ -26,7 +26,7 @@ stuffPlusUI <- function(id) {
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           color: #1a1a1a;
-          background-color: #f8f9fa;
+          background-color: #f1f5f9;
         }
 
         .main-container {
@@ -127,8 +127,9 @@ stuffPlusUI <- function(id) {
 
         .player-panel {
           background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          border: 1px solid #e5e7eb;
+          border-radius: 0;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
           overflow: visible;
           display: flex;
           flex-direction: column;
@@ -136,10 +137,14 @@ stuffPlusUI <- function(id) {
 
         .filters {
           padding: 16px;
+          border-bottom: 1px solid #e5e7eb;
         }
 
         .filter-section {
           margin-bottom: 20px;
+          background: #fafbfc;
+          border: 1px solid #e5e7eb;
+          padding: 12px;
         }
 
         .filter-title {
