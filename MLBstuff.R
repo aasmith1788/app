@@ -556,13 +556,13 @@ stuffPlusServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     
     # ---- 1. Load and process all data --------------------------------
-    csv_2023 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2023/Model Development/test_results_xgboost_regression_runvalue_2023_pfx.csv"
-    csv_2024 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2024/Model Development/test_results_xgboost_regression_runvalue_2024_pfx.csv"
-    csv_2025 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2025/Model Development/test_results_xgboost_regression_runvalue_2025_pfx.csv"
-    
-    prm_2023 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2023/Model Development/stuff_plus_formula_parameters_2023_pfx.csv"
-    prm_2024 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2024/Model Development/stuff_plus_formula_parameters_2024_pfx.csv"
-    prm_2025 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2025/Model Development/stuff_plus_formula_parameters_2025_pfx.csv"
+    csv_2023 <- "https://drive.google.com/uc?id=1RAd1NpTB6cYzy_2dljfzZAuwJeGh-paJ&export=download"
+    csv_2024 <- "https://drive.google.com/uc?id=1o4tHKQ8ekBw4VKnBM6YHwbWLXouTBCt1&export=download"
+    csv_2025 <- "https://drive.google.com/uc?id=17YO7tsXjpPda5CnAHWCLcXefFU4USB3e&export=download"
+
+    prm_2023 <- "https://drive.google.com/uc?id=1C4DjfNht0OomTTFauL0h_2hUohqmbfzn&export=download"
+    prm_2024 <- "https://drive.google.com/uc?id=1KWwsaDXP4ae79UMe_kENY7ArnpDxNM6l&export=download"
+    prm_2025 <- "https://drive.google.com/uc?id=1daBObOF0QSpHrotN9TVuse4Gzt93V2F7&export=download"
     
     params <- bind_rows(
       read_csv(prm_2023, show_col_types = FALSE),
