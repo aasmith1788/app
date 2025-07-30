@@ -36,10 +36,11 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: linear-gradient(135deg, #e0e4ec, #f5f7fa);
+          background: #FFDE00;
           padding: 24px;
           margin-bottom: 20px;
           border-radius: 8px;
+          border: 1px solid #000;
           display: flex;
           flex-direction: column;
         }
@@ -65,6 +66,13 @@ stuffPlusUI <- function(id) {
 
         .mode-toggle .btn {
           flex: 1;
+          background-color: #fff;
+          color: #000;
+          border: 1px solid #000;
+        }
+        .mode-toggle .btn.active {
+          background-color: #000;
+          color: #fff;
         }
 
         .filter-header {
@@ -279,7 +287,7 @@ stuffPlusUI <- function(id) {
     div(class = "main-container",
         # Header
         div(class = "header-section",
-            h1("MLB Stuff Plus Analytics - Player Comparison", class = "page-title"),
+            h1("P3 Pitch Modeling", class = "page-title"),
             div(class = "mode-toggle",
                 radioGroupButtons(
                   inputId = ns("player_mode"),
