@@ -1581,12 +1581,32 @@ stuffPlusServer <- function(id) {
     
     create_p3_movement_plot <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
-      
-      ggplot(df, aes(x = pfx_x, y = pfx_z, colour = pitch_type)) +
+
+      plot_data <- df %>%
+        mutate(
+          horizontal_break = ifelse(p_throws == "L", -pfx_x, pfx_x),
+          vertical_break = pfx_z
+        ) %>%
+        filter(!is.na(horizontal_break), !is.na(vertical_break))
+
+      ggplot(plot_data, aes(x = horizontal_break, y = vertical_break, colour = pitch_type)) +
         geom_point(alpha = 0.7, size = 1.5) +
         geom_hline(yintercept = 0, colour = "black", size = 0.5) +
         geom_vline(xintercept = 0, colour = "black", size = 0.5) +
         scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        scale_x_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10),
+          labels = c("20", "10", "0", "10", "20")
+        ) +
+        scale_y_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10)
+        ) +
+        annotate("text", x = -15, y = -23, label = "Arm Side",
+                 size = 3, hjust = 0.5, fontface = "bold") +
+        annotate("text", x = 15, y = -23, label = "Glove Side",
+                 size = 3, hjust = 0.5, fontface = "bold") +
         labs(title = "Pitch Movement", x = "Horizontal Break (in)", y = "Induced Vertical Break (in)") +
         theme_minimal(base_size = 11) +
         theme(
@@ -1595,6 +1615,7 @@ stuffPlusServer <- function(id) {
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
           axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
           legend.position = "none",
           panel.background = element_rect(fill = "white", color = NA),
           plot.background = element_rect(fill = "white", color = NA)
@@ -1603,11 +1624,47 @@ stuffPlusServer <- function(id) {
     
     create_p3_location_plot <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
-      
-      ggplot(df, aes(x = plate_location_side, y = plate_location_height, colour = pitch_type)) +
-        geom_point(alpha = 0.7, size = 1.5) +
+
+      plot_data <- df %>%
+        filter(!is.na(plate_location_side), !is.na(plate_location_height))
+
+      if (nrow(plot_data) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No location data",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Location"))
+      }
+
+      summary_data <- plot_data %>%
+        group_by(pitch_type) %>%
+        summarise(
+          mean_x = mean(plate_location_side, na.rm = TRUE),
+          mean_z = mean(plate_location_height, na.rm = TRUE),
+          sd_x = sd(plate_location_side, na.rm = TRUE),
+          sd_z = sd(plate_location_height, na.rm = TRUE),
+          .groups = "drop"
+        )
+
+      zone_width <- 17 / 12
+      zone_height <- 26 / 12
+      zone_left <- -zone_width / 2
+      zone_right <- zone_width / 2
+      zone_bottom <- 1.5
+      zone_top <- zone_bottom + zone_height
+
+      ggplot(summary_data, aes(x = mean_x, y = mean_z, colour = pitch_type, fill = pitch_type)) +
+        ggforce::geom_ellipse(aes(x0 = mean_x, y0 = mean_z, a = sd_x, b = sd_z, angle = 0),
+                              alpha = 0.2, colour = NA) +
+        geom_point(size = 2) +
+        geom_rect(xmin = zone_left, xmax = zone_right,
+                  ymin = zone_bottom, ymax = zone_top,
+                  colour = "black", fill = NA, linewidth = 0.5) +
         scale_colour_manual(values = pitch_colors, na.value = "grey50") +
-        labs(title = "Pitch Location", x = "Plate Side", y = "Plate Height") +
+        scale_fill_manual(values = pitch_colors, na.value = "grey50") +
+        coord_fixed(xlim = c(-2, 2), ylim = c(0, 5)) +
+        labs(title = "Pitch Location", x = "Plate X (ft)", y = "Plate Z (ft)") +
         theme_minimal(base_size = 11) +
         theme(
           plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
@@ -1615,6 +1672,7 @@ stuffPlusServer <- function(id) {
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
           axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
           legend.position = "none",
           panel.background = element_rect(fill = "white", color = NA),
           plot.background = element_rect(fill = "white", color = NA)
