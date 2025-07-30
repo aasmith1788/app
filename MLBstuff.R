@@ -263,6 +263,7 @@ stuffPlusUI <- function(id) {
 
         .data-table-container {
           margin-top: 8px;
+          overflow-x: auto;
         }
 
         .plot-row {
@@ -1321,6 +1322,7 @@ stuffPlusServer <- function(id) {
           dom = "t",
           ordering = FALSE,
           autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
             list(width = "8%", targets = 0),
@@ -1774,6 +1776,7 @@ stuffPlusServer <- function(id) {
           paging = FALSE,
           pageLength = nrow(df),
           autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
@@ -1805,6 +1808,7 @@ stuffPlusServer <- function(id) {
           ordering = FALSE,
           pageLength = 10,
           autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
