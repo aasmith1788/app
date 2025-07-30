@@ -36,18 +36,20 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: #FFDE00;
+          background: linear-gradient(135deg, #FFDE00 0%, #F59E0B 100%);
           padding: 24px;
           margin-bottom: 20px;
-          border-radius: 8px;
-          border: 1px solid #000;
+          border-radius: 12px;
+          border: none;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
           display: flex;
           flex-direction: column;
         }
 
         .page-title {
           font-size: 28px;
-          font-weight: 700;
+          font-weight: 600;
+          letter-spacing: 0.5px;
           margin: 0 0 16px 0;
         }
 
@@ -68,7 +70,8 @@ stuffPlusUI <- function(id) {
           flex: 1;
           background-color: #fff;
           color: #000;
-          border: 1px solid #000;
+          border: 1px solid rgba(0,0,0,0.2);
+          transition: all 0.2s ease;
         }
         .mode-toggle .btn.active {
           background-color: #000;
@@ -858,11 +861,15 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui1 <- renderUI({
       req(player1_data())
       ns <- session$ns
-      dates <- sort(unique(player1_data()$date))
+      dates <- player1_data() %>%
+        select(date) %>%
+        distinct() %>%
+        arrange(desc(date))
+
       pickerInput(
         inputId = ns("p3_dates1"),
         label = NULL,
-        choices = dates,
+        choices = setNames(dates$date, format(dates$date, "%b %d, %Y")),
         selected = NULL,
         multiple = TRUE,
         options = list(
@@ -948,11 +955,15 @@ stuffPlusServer <- function(id) {
     output$p3_date_picker_ui2 <- renderUI({
       req(player2_data())
       ns <- session$ns
-      dates <- sort(unique(player2_data()$date))
+      dates <- player2_data() %>%
+        select(date) %>%
+        distinct() %>%
+        arrange(desc(date))
+
       pickerInput(
         inputId = ns("p3_dates2"),
         label = NULL,
-        choices = dates,
+        choices = setNames(dates$date, format(dates$date, "%b %d, %Y")),
         selected = NULL,
         multiple = TRUE,
         options = list(
