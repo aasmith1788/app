@@ -65,21 +65,31 @@ stuffPlusUI <- function(id) {
 
         .mode-toggle {
           display: flex;
-          gap: 10px;
-          margin-left: 20px;
+          gap: 8px;
+          margin-left: 8px;
         }
 
         .mode-toggle .btn {
           flex: none;
-          background: transparent;
-          color: #ccc;
+          background: none !important;
+          color: #fff;
           border: none;
           border-radius: 0;
-          box-shadow: none;
-          padding: 4px 8px;
+          box-shadow: none !important;
+          padding: 2px 6px;
         }
-        .mode-toggle .btn.active {
+        .mode-toggle .btn:hover,
+        .mode-toggle .btn:focus {
+          color: #fff;
+          background: none !important;
+          box-shadow: none !important;
+        }
+        .mode-toggle .btn.active,
+        .mode-toggle .btn.active:hover,
+        .mode-toggle .btn.active:focus {
           color: #FFDE00;
+          background: none !important;
+          box-shadow: none !important;
           border-bottom: 2px solid #FFDE00;
         }
 
