@@ -97,6 +97,8 @@ stuffPlusUI <- function(id) {
           display: flex;
           gap: 8px;
           margin-bottom: 16px;
+          background: #000;
+          padding: 8px;
         }
 
         .filter-header .btn {
