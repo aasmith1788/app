@@ -36,8 +36,8 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: #000;
-          padding: 24px;
+          background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+          padding: 32px;
           margin-bottom: 20px;
           border: none;
           border-radius: 0;
@@ -97,14 +97,16 @@ stuffPlusUI <- function(id) {
           display: flex;
           gap: 8px;
           margin-bottom: 16px;
-          background: #000;
-          padding: 8px;
+          background: #f8f9fa;
+          padding: 16px;
+          font-weight: 600;
+          border-bottom: 1px solid #e5e7eb;
         }
 
         .filter-header .btn {
           flex: none;
           background: none !important;
-          color: #fff;
+          color: #000;
           border: none;
           border-radius: 0;
           box-shadow: none !important;
@@ -112,7 +114,7 @@ stuffPlusUI <- function(id) {
         }
         .filter-header .btn:hover,
         .filter-header .btn:focus {
-          color: #fff;
+          color: #000;
           background: none !important;
           box-shadow: none !important;
         }
@@ -129,7 +131,8 @@ stuffPlusUI <- function(id) {
           background: #fff;
           border: 1px solid #e5e7eb;
           border-radius: 0;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          padding: 24px;
           overflow: visible;
           display: flex;
           flex-direction: column;
@@ -144,7 +147,7 @@ stuffPlusUI <- function(id) {
           margin-bottom: 20px;
           background: #fafbfc;
           border: 1px solid #e5e7eb;
-          padding: 12px;
+          padding: 20px;
         }
 
         .filter-title {
@@ -234,9 +237,9 @@ stuffPlusUI <- function(id) {
         }
 
         .section-title {
-          font-size: 14px;
+          font-size: 16px;
           font-weight: 600;
-          color: #1a1a1a;
+          color: #111;
           margin: 0 0 12px 0;
           text-transform: uppercase;
           letter-spacing: 0.5px;
