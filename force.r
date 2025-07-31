@@ -435,13 +435,27 @@ combinedPPPRadarsServer <- function(id) {
         mutate(test_date = as.Date(test_date))
     })
 
-    # 4. Z‑scores reactive (keeping for radar chart)
+    # 4. Z‑scores reactive (used for table outputs)
+    #    Reference group is 90-92 mph throwers (mirrors Force Dis logic)
     zdata <- reactive({
+      df <- data()
+      ref <- df %>% filter(max_fb_velo >= 90, max_fb_velo <= 92)
+      means <- sapply(ref[metric_columns], mean, na.rm = TRUE)
+      sds   <- sapply(ref[metric_columns], sd,  na.rm = TRUE)
+      sds[sds == 0] <- 1
+      df %>%
+        mutate(across(all_of(metric_columns),
+                      ~ (. - means[cur_column()]) / sds[cur_column()],
+                      .names = "{col}_z"))
+    })
+
+    # Percentile data for radar plot
+    pctdata <- reactive({
       df <- data()
       df %>%
         mutate(across(all_of(metric_columns),
-                      ~ (. - mean(., na.rm=TRUE)) / sd(., na.rm=TRUE),
-                      .names = "{col}_z"))
+                      ~ percent_rank(.) * 100,
+                      .names = "{col}_pct"))
     })
 
     # 5. FIXED LASSO-based composite score calculation (matching standalone script)
@@ -576,18 +590,18 @@ combinedPPPRadarsServer <- function(id) {
       # Use the dynamically selected metrics for radar plot
       radar_metrics <- input$radar_metrics
 
-      # Build the shared min/max boundaries
-      radar_zcols <- paste0(radar_metrics, "_z")
-      mins  <- sapply(zdata()[radar_zcols], min, na.rm = TRUE)
-      maxs  <- sapply(zdata()[radar_zcols], max, na.rm = TRUE)
+      # Build the shared min/max boundaries using percentiles
+      radar_pcols <- paste0(radar_metrics, "_pct")
+      mins  <- rep(0, length(radar_pcols))
+      maxs  <- rep(100, length(radar_pcols))
       df_radar <- as.data.frame(rbind(maxs, mins))
       rownames(df_radar) <- c("Max", "Min")
 
       # Overlay one polygon per selected RADAR test date (not all dates)
       for (d in input$radar_test_dates) {
-        athlete_row <- zdata() %>%
+        athlete_row <- pctdata() %>%
           filter(athlete_name == input$select_athlete, Test_Date == d) %>%
-          select(all_of(radar_zcols)) %>%
+          select(all_of(radar_pcols)) %>%
           unlist(use.names = FALSE)
 
         df_radar <- rbind(df_radar, athlete_row)
@@ -596,11 +610,11 @@ combinedPPPRadarsServer <- function(id) {
 
       # Add comparison overlays
       if (input$show_hs_avg) {
-        avg_hs <- colMeans(zdata() %>% filter(level_group==1) %>% select(all_of(radar_zcols)), na.rm = TRUE)
+        avg_hs <- colMeans(pctdata() %>% filter(level_group==1) %>% select(all_of(radar_pcols)), na.rm = TRUE)
         df_radar <- rbind(df_radar, avg_hs); rownames(df_radar)[nrow(df_radar)] <- "HS Average"
       }
       if (input$show_college_avg) {
-        avg_co <- colMeans(zdata() %>% filter(level_group==2) %>% select(all_of(radar_zcols)), na.rm = TRUE)
+        avg_co <- colMeans(pctdata() %>% filter(level_group==2) %>% select(all_of(radar_pcols)), na.rm = TRUE)
         df_radar <- rbind(df_radar, avg_co); rownames(df_radar)[nrow(df_radar)] <- "College Average"
       }
       if (input$select_velocity_group != "All") {
@@ -610,9 +624,9 @@ combinedPPPRadarsServer <- function(id) {
                            "80-85" = 83,
                            "85-90" = 87,
                            ">90"   = 91)
-        avg_velo <- zdata() %>%
+        avg_velo <- pctdata() %>%
           filter(velo_group == vel_code) %>%
-          select(all_of(radar_zcols))
+          select(all_of(radar_pcols))
         df_radar <- rbind(df_radar, colMeans(avg_velo, na.rm=TRUE))
         rownames(df_radar)[nrow(df_radar)] <- "Velocity Average"
       }
