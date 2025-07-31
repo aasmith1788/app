@@ -26,7 +26,7 @@ stuffPlusUI <- function(id) {
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           color: #1a1a1a;
-          background-color: #f8f9fa;
+          background-color: #f1f5f9;
         }
 
         .main-container {
@@ -36,8 +36,8 @@ stuffPlusUI <- function(id) {
         }
 
         .header-section {
-          background: #FFDE00;
-          padding: 24px;
+          background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+          padding: 32px;
           margin-bottom: 20px;
           border: none;
           border-radius: 0;
@@ -53,6 +53,7 @@ stuffPlusUI <- function(id) {
           font-weight: 600;
           letter-spacing: 0.5px;
           margin: 0;
+          color: #FFDE00;
         }
 
 
@@ -64,49 +65,104 @@ stuffPlusUI <- function(id) {
 
         .mode-toggle {
           display: flex;
-          gap: 10px;
-          margin-left: 40px;
+          gap: 8px;
+          margin-left: 8px;
         }
 
         .mode-toggle .btn {
-          flex: 1;
-          background-color: #FFDE00;
-          color: #000;
+          flex: none;
+          background: none !important;
+          color: #fff;
           border: none;
           border-radius: 0;
-          box-shadow: none;
-          transition: all 0.2s ease;
+          box-shadow: none !important;
+          padding: 2px 6px;
+          transition: color 0.2s ease, border-color 0.2s ease;
+          cursor: pointer;
         }
-        .mode-toggle .btn.active {
-          text-decoration: underline;
-          font-weight: 600;
+        .mode-toggle .btn:hover,
+        .mode-toggle .btn:focus {
+          color: #6b7280;
+          background: none !important;
+          box-shadow: none !important;
+        }
+        .mode-toggle .btn.active,
+        .mode-toggle .btn.active:hover,
+        .mode-toggle .btn.active:focus {
+          color: #FFDE00;
+          background: none !important;
+          box-shadow: none !important;
+          border-bottom: 2px solid #FFDE00;
         }
 
         .filter-header {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           margin-bottom: 16px;
+          background: #f8f9fa;
+          padding: 12px;
+          font-weight: 600;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .filter-header .btn {
-          flex: 1;
+          flex: none;
+          background: none !important;
+          color: #4b5563;
+          border: none;
+          border-radius: 0;
+          box-shadow: none !important;
+          padding: 2px 6px;
+          transition: color 0.2s ease, border-color 0.2s ease;
+          cursor: pointer;
+        }
+        .filter-header .btn:hover,
+        .filter-header .btn:focus {
+          color: #6b7280;
+          background: none !important;
+          box-shadow: none !important;
+        }
+        .filter-header .btn.active,
+        .filter-header .btn.active:hover,
+        .filter-header .btn.active:focus {
+          color: #FFDE00;
+          background: none !important;
+          box-shadow: none !important;
+          border-bottom: 2px solid #FFDE00;
         }
 
         .player-panel {
           background: #fff;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          border: 1px solid #e5e7eb;
+          border-radius: 0;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          padding: 24px;
           overflow: visible;
           display: flex;
           flex-direction: column;
+          transition: box-shadow 0.2s ease;
+        }
+
+        .player-panel:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         .filters {
           padding: 16px;
+          border-bottom: 1px solid #e5e7eb;
         }
 
         .filter-section {
           margin-bottom: 20px;
+          background: #fafbfc;
+          border: 1px solid #e5e7eb;
+          padding: 20px;
+          transition: box-shadow 0.2s ease;
+        }
+
+        .filter-section:hover {
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         }
 
         .filter-title {
@@ -150,24 +206,25 @@ stuffPlusUI <- function(id) {
 
         .selectize-input,
         .picker-input .btn {
-          border: 1px solid #ccc !important;
+          border: 2px solid #ccc !important;
           border-radius: 4px !important;
           padding: 6px 12px !important;
           min-height: 36px !important;
           font-size: 13px !important;
           background: #fff !important;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .selectize-input:hover,
         .picker-input .btn:hover {
-          border-color: #999 !important;
+          border-color: #6b7280 !important;
         }
 
         .selectize-input.focus,
         .picker-input .btn:focus {
-          border-color: #0d6efd !important;
-          box-shadow: 0 0 0 2px rgba(13,110,253,.25) !important;
+          border-color: #4b5563 !important;
+          box-shadow: 0 0 0 2px rgba(75,85,99,0.25) !important;
         }
 
         .player-content {
@@ -196,9 +253,9 @@ stuffPlusUI <- function(id) {
         }
 
         .section-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1a1a1a;
+          font-size: 18px;
+          font-weight: 700;
+          color: #111;
           margin: 0 0 12px 0;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -206,6 +263,7 @@ stuffPlusUI <- function(id) {
 
         .data-table-container {
           margin-top: 8px;
+          overflow-x: auto;
         }
 
         .plot-row {
@@ -224,6 +282,7 @@ stuffPlusUI <- function(id) {
           font-size: 9px;
           border-collapse: collapse;
           width: 100%;
+          table-layout: auto;
         }
 
         table.dataTable thead th {
@@ -244,7 +303,12 @@ stuffPlusUI <- function(id) {
           text-align: center;
           color: #1a1a1a;
           font-size: 9px;
-          white-space: nowrap;
+          white-space: normal;
+          word-wrap: break-word;
+        }
+
+        table.dataTable tbody tr {
+          transition: background-color 0.2s ease;
         }
 
         table.dataTable tbody tr:hover {
@@ -301,9 +365,9 @@ stuffPlusUI <- function(id) {
                   label = NULL,
                   choices = c("Single Athlete" = "single", "Two Athletes" = "two"),
                   selected = "two",
-                  justified = TRUE,
+                  justified = FALSE,
                   individual = TRUE,
-                  status = "primary"
+                  status = "default"
                 )
             )
         ),
@@ -319,9 +383,9 @@ stuffPlusUI <- function(id) {
                           label = NULL,
                           choices = c("MLB", "P3"),
                           selected = "MLB",
-                          justified = TRUE,
+                          justified = FALSE,
                           individual = TRUE,
-                          status = "primary"
+                          status = "default"
                         )
                     ),
                     selectizeInput(ns("player1_search"), label = NULL,
@@ -406,9 +470,9 @@ stuffPlusUI <- function(id) {
                             label = NULL,
                             choices = c("MLB", "P3"),
                             selected = "MLB",
-                            justified = TRUE,
+                            justified = FALSE,
                             individual = TRUE,
-                            status = "primary"
+                            status = "default"
                           )
                       ),
                       selectizeInput(ns("player2_search"), label = NULL,
@@ -492,13 +556,13 @@ stuffPlusServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     
     # ---- 1. Load and process all data --------------------------------
-    csv_2023 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2023/Model Development/test_results_xgboost_regression_runvalue_2023_pfx.csv"
-    csv_2024 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2024/Model Development/test_results_xgboost_regression_runvalue_2024_pfx.csv"
-    csv_2025 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2025/Model Development/test_results_xgboost_regression_runvalue_2025_pfx.csv"
-    
-    prm_2023 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2023/Model Development/stuff_plus_formula_parameters_2023_pfx.csv"
-    prm_2024 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2024/Model Development/stuff_plus_formula_parameters_2024_pfx.csv"
-    prm_2025 <- "C:/Users/aasmi/p3_summer_2025/Pitch Modeling Organaized/Stuff Plus/2025/Model Development/stuff_plus_formula_parameters_2025_pfx.csv"
+    csv_2023 <- "https://drive.google.com/uc?id=1RAd1NpTB6cYzy_2dljfzZAuwJeGh-paJ&export=download"
+    csv_2024 <- "https://drive.google.com/uc?id=1o4tHKQ8ekBw4VKnBM6YHwbWLXouTBCt1&export=download"
+    csv_2025 <- "https://drive.google.com/uc?id=17YO7tsXjpPda5CnAHWCLcXefFU4USB3e&export=download"
+
+    prm_2023 <- "https://drive.google.com/uc?id=1C4DjfNht0OomTTFauL0h_2hUohqmbfzn&export=download"
+    prm_2024 <- "https://drive.google.com/uc?id=1KWwsaDXP4ae79UMe_kENY7ArnpDxNM6l&export=download"
+    prm_2025 <- "https://drive.google.com/uc?id=1daBObOF0QSpHrotN9TVuse4Gzt93V2F7&export=download"
     
     params <- bind_rows(
       read_csv(prm_2023, show_col_types = FALSE),
@@ -1257,12 +1321,15 @@ stuffPlusServer <- function(id) {
         options = list(
           dom = "t",
           ordering = FALSE,
+          autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(
             list(className = "dt-center", targets = "_all"),
-            list(width = "20px", targets = 0),  # Type
-            list(width = "33px", targets = 1),  # Count
-            list(width = "24px", targets = c(2:8)),  # Stats
-            list(width = "28px", targets = c(9:12))  # Percentages
+            list(width = "8%", targets = 0),
+            list(width = "8%", targets = 1),
+            list(width = "7%", targets = c(2:8)),
+            list(width = "8%", targets = 9),
+            list(width = "9%", targets = c(10:12))
           )
         ),
         rownames = FALSE,
@@ -1516,12 +1583,32 @@ stuffPlusServer <- function(id) {
     
     create_p3_movement_plot <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
-      
-      ggplot(df, aes(x = pfx_x, y = pfx_z, colour = pitch_type)) +
+
+      plot_data <- df %>%
+        mutate(
+          horizontal_break = ifelse(p_throws == "L", -pfx_x, pfx_x),
+          vertical_break = pfx_z
+        ) %>%
+        filter(!is.na(horizontal_break), !is.na(vertical_break))
+
+      ggplot(plot_data, aes(x = horizontal_break, y = vertical_break, colour = pitch_type)) +
         geom_point(alpha = 0.7, size = 1.5) +
         geom_hline(yintercept = 0, colour = "black", size = 0.5) +
         geom_vline(xintercept = 0, colour = "black", size = 0.5) +
         scale_colour_manual(values = pitch_colors, na.value = "grey50") +
+        scale_x_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10),
+          labels = c("20", "10", "0", "10", "20")
+        ) +
+        scale_y_continuous(
+          limits = c(-25, 25),
+          breaks = seq(-20, 20, by = 10)
+        ) +
+        annotate("text", x = -15, y = -23, label = "Arm Side",
+                 size = 3, hjust = 0.5, fontface = "bold") +
+        annotate("text", x = 15, y = -23, label = "Glove Side",
+                 size = 3, hjust = 0.5, fontface = "bold") +
         labs(title = "Pitch Movement", x = "Horizontal Break (in)", y = "Induced Vertical Break (in)") +
         theme_minimal(base_size = 11) +
         theme(
@@ -1530,6 +1617,7 @@ stuffPlusServer <- function(id) {
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
           axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
           legend.position = "none",
           panel.background = element_rect(fill = "white", color = NA),
           plot.background = element_rect(fill = "white", color = NA)
@@ -1538,11 +1626,47 @@ stuffPlusServer <- function(id) {
     
     create_p3_location_plot <- function(df) {
       if (is.null(df) || nrow(df) == 0) return(NULL)
-      
-      ggplot(df, aes(x = plate_location_side, y = plate_location_height, colour = pitch_type)) +
-        geom_point(alpha = 0.7, size = 1.5) +
+
+      plot_data <- df %>%
+        filter(!is.na(plate_location_side), !is.na(plate_location_height))
+
+      if (nrow(plot_data) == 0) {
+        return(ggplot() +
+                 annotate("text", x = 0, y = 0, label = "No location data",
+                          size = 3, hjust = 0.5) +
+                 theme_void() +
+                 theme(plot.title = element_text(hjust = 0.5, size = 12)) +
+                 labs(title = "Pitch Location"))
+      }
+
+      summary_data <- plot_data %>%
+        group_by(pitch_type) %>%
+        summarise(
+          mean_x = mean(plate_location_side, na.rm = TRUE),
+          mean_z = mean(plate_location_height, na.rm = TRUE),
+          sd_x = sd(plate_location_side, na.rm = TRUE),
+          sd_z = sd(plate_location_height, na.rm = TRUE),
+          .groups = "drop"
+        )
+
+      zone_width <- 17 / 12
+      zone_height <- 26 / 12
+      zone_left <- -zone_width / 2
+      zone_right <- zone_width / 2
+      zone_bottom <- 1.5
+      zone_top <- zone_bottom + zone_height
+
+      ggplot(summary_data, aes(x = mean_x, y = mean_z, colour = pitch_type, fill = pitch_type)) +
+        ggforce::geom_ellipse(aes(x0 = mean_x, y0 = mean_z, a = sd_x, b = sd_z, angle = 0),
+                              alpha = 0.2, colour = NA) +
+        geom_point(size = 2) +
+        geom_rect(xmin = zone_left, xmax = zone_right,
+                  ymin = zone_bottom, ymax = zone_top,
+                  colour = "black", fill = NA, linewidth = 0.5) +
         scale_colour_manual(values = pitch_colors, na.value = "grey50") +
-        labs(title = "Pitch Location", x = "Plate Side", y = "Plate Height") +
+        scale_fill_manual(values = pitch_colors, na.value = "grey50") +
+        coord_fixed(xlim = c(-2, 2), ylim = c(0, 5)) +
+        labs(title = "Pitch Location", x = "Plate X (ft)", y = "Plate Z (ft)") +
         theme_minimal(base_size = 11) +
         theme(
           plot.title = element_text(hjust = 0.5, size = 12, face = "bold"),
@@ -1550,6 +1674,7 @@ stuffPlusServer <- function(id) {
           panel.grid.minor = element_line(color = "grey92", size = 0.3),
           axis.title = element_text(size = 10),
           axis.text = element_text(size = 9),
+          axis.text.x = element_text(size = 8),
           legend.position = "none",
           panel.background = element_rect(fill = "white", color = NA),
           plot.background = element_rect(fill = "white", color = NA)
@@ -1650,6 +1775,8 @@ stuffPlusServer <- function(id) {
           ordering = FALSE,
           paging = FALSE,
           pageLength = nrow(df),
+          autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
@@ -1680,6 +1807,8 @@ stuffPlusServer <- function(id) {
           dom = "t",
           ordering = FALSE,
           pageLength = 10,
+          autoWidth = TRUE,
+          scrollX = TRUE,
           columnDefs = list(list(className = "dt-center", targets = "_all"))
         ),
         rownames = FALSE,
