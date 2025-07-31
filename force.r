@@ -436,11 +436,16 @@ combinedPPPRadarsServer <- function(id) {
     })
 
     # 4. Z‑scores reactive (used for table outputs)
+    #    Reference group is 90-92 mph throwers (mirrors Force Dis logic)
     zdata <- reactive({
       df <- data()
+      ref <- df %>% filter(max_fb_velo >= 90, max_fb_velo <= 92)
+      means <- sapply(ref[metric_columns], mean, na.rm = TRUE)
+      sds   <- sapply(ref[metric_columns], sd,  na.rm = TRUE)
+      sds[sds == 0] <- 1
       df %>%
         mutate(across(all_of(metric_columns),
-                      ~ (. - mean(., na.rm=TRUE)) / sd(., na.rm=TRUE),
+                      ~ (. - means[cur_column()]) / sds[cur_column()],
                       .names = "{col}_z"))
     })
 
